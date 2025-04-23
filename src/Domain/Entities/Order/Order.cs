@@ -15,6 +15,14 @@ namespace Domain.Entities.Order
         [Required]
         [Column(TypeName = "decimal(18,2)")]
         public float Total {  get; set; }
+        [Required]
+        public int UserId { get; set; }
+
+        public void GenerateRandomUserId()
+        {
+            var random = new Random();
+            UserId = random.Next(1, 2);
+        }
 
     }
 }
