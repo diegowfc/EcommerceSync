@@ -1,5 +1,6 @@
 ﻿using Domain.Entities.Product;
-using Domain.Interfaces.IProductRepository;
+using Domain.Interfaces.ProductInterface;
+using EcommerceSync.Infrastructure.Data;
 using Infrastructure.Repositories.RepositoryBase;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,7 +8,7 @@ namespace Infrastructure.Repositories.ProductRepository
 {
     public class ProductRepository : RepositoryBase<Product>, IProductRepository
     {
-        public ProductRepository(DbContext context) : base(context)
+        public ProductRepository(EcommerceSyncDbContext context) : base(context)
         {
         }
 

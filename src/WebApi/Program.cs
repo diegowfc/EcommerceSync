@@ -1,4 +1,10 @@
+using Domain.Interfaces.OrderInterface;
+using Domain.Interfaces.ProductInterface;
+using Domain.Interfaces.UnitOfWork;
 using EcommerceSync.Infrastructure.Data;
+using Infrastructure.Repositories.OrderRepository;
+using Infrastructure.Repositories.ProductRepository;
+using Infrastructure.Repositories.UoWRepository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,6 +18,8 @@ namespace src
 
             builder.Services.AddDbContext<EcommerceSyncDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 
             builder.Services.AddControllers();
 

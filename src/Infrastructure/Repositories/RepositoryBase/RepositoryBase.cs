@@ -1,4 +1,5 @@
-﻿using Domain.Interfaces.IRepositoryBase;
+﻿using Domain.Interfaces.BaseInterface;
+using EcommerceSync.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -6,10 +7,10 @@ namespace Infrastructure.Repositories.RepositoryBase
 {
     public class RepositoryBase<T> : IRepositoryBase<T> where T : class
     {
-        protected readonly DbContext _context;
+        protected readonly EcommerceSyncDbContext _context;
         protected readonly DbSet<T> _dbSet;
 
-        public RepositoryBase(DbContext context)
+        public RepositoryBase(EcommerceSyncDbContext context)
         {
             _context = context;
             _dbSet = _context.Set<T>();

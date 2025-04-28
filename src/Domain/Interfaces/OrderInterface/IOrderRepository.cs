@@ -1,7 +1,7 @@
 ﻿using Domain.Entities.Order;
-using Domain.Interfaces.IRepositoryBase;
+using Domain.Interfaces.BaseInterface;
 
-namespace Domain.Interfaces.IOrderRepository
+namespace Domain.Interfaces.OrderInterface
 {
     public interface IOrderRepository : IRepositoryBase<Order>
     {

@@ -1,7 +1,7 @@
 ﻿using Domain.Entities.Product;
-using Domain.Interfaces.IRepositoryBase;
+using Domain.Interfaces.BaseInterface;
 
-namespace Domain.Interfaces.IProductRepository
+namespace Domain.Interfaces.ProductInterface
 {
     public interface IProductRepository : IRepositoryBase<Product>
     {
