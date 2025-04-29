@@ -1,3 +1,4 @@
+using Application.Mappings;
 using Domain.Interfaces.OrderInterface;
 using Domain.Interfaces.ProductInterface;
 using Domain.Interfaces.UnitOfWork;
@@ -6,9 +7,8 @@ using Infrastructure.Repositories.OrderRepository;
 using Infrastructure.Repositories.ProductRepository;
 using Infrastructure.Repositories.UoWRepository;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace src
+namespace WebAPI
 {
     public class Program
     {
@@ -20,6 +20,10 @@ namespace src
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+            builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            builder.Services.AddAutoMapper(typeof(OrderProfile).Assembly);
 
             builder.Services.AddControllers();
 
