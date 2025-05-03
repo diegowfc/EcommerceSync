@@ -1,4 +1,4 @@
-﻿using Domain.Entities.Order;
+﻿using Domain.Entities.OrderEntity;
 using Domain.Interfaces.BaseInterface;
 
 namespace Domain.Interfaces.OrderInterface

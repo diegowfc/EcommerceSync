@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Domain.Entities.OrderItem
+namespace Domain.Entities.OrderItemEntity
 {
     public class OrderItem
     {

@@ -1,6 +1,6 @@
 ﻿using Application.DTOs;
 using AutoMapper;
-using Domain.Entities.OrderItem;
+using Domain.Entities.OrderItemEntity;
 
 namespace Application.Mappings
 {

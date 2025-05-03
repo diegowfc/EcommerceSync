@@ -1,4 +1,4 @@
-﻿using Domain.Entities.Order;
+﻿using Domain.Entities.OrderEntity;
 using Domain.Interfaces.OrderInterface;
 using EcommerceSync.Infrastructure.Data;
 using Infrastructure.Repositories.RepositoryBase;

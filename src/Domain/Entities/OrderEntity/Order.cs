@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Domain.Entities.Order
+namespace Domain.Entities.OrderEntity
 {
     public class Order
     {

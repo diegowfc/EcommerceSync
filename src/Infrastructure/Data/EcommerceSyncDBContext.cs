@@ -1,6 +1,6 @@
-﻿using Domain.Entities.Order;
-using Domain.Entities.OrderItem;
-using Domain.Entities.Product;
+﻿using Domain.Entities.OrderEntity;
+using Domain.Entities.OrderItemEntity;
+using Domain.Entities.ProductEntity;
 using Microsoft.EntityFrameworkCore;
 
 namespace EcommerceSync.Infrastructure.Data

@@ -1,4 +1,4 @@
-﻿using Domain.Entities.Product;
+﻿using Domain.Entities.ProductEntity;
 using Domain.Interfaces.ProductInterface;
 using EcommerceSync.Infrastructure.Data;
 using Infrastructure.Repositories.RepositoryBase;
