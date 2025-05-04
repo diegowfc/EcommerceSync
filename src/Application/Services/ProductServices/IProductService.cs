@@ -7,7 +7,7 @@ namespace Application.Services.ProductServices
         Task<IEnumerable<ProductDTO>> GetAllProductsAsync();
         Task<ProductDTO> GetProductByIdAsync(int id);
         Task CreateProductAsync(ProductDTO productDto);
-        Task UpdateProductAsync(ProductDTO productDto);
+        Task UpdateProductAsync(int id, ProductDTO productDto);
         Task DeleteProductAsync(int id);
     }
 }

@@ -30,19 +30,34 @@ namespace Application.Services.ProductServices
             await _unitOfWork.CommitAsync();
         }
 
-        public Task<IEnumerable<ProductDTO>> GetAllProductsAsync()
+        public async Task<IEnumerable<ProductDTO>> GetAllProductsAsync()
         {
-            throw new NotImplementedException();
+            var products = await _unitOfWork.Products.GetAllAsync();
+            return _mapper.Map<IEnumerable<ProductDTO>>(products);
         }
 
-        public Task<ProductDTO> GetProductByIdAsync(int id)
+        public async Task<ProductDTO> GetProductByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var products = await _unitOfWork.Products.GetByIdAsync(id);
+            return _mapper.Map<ProductDTO>(products);
         }
 
-        public Task UpdateProductAsync(ProductDTO productDto)
+        public async Task UpdateProductAsync(int id, ProductDTO productDto)
         {
-            throw new NotImplementedException();
+            var product = await _unitOfWork.Products.GetByIdAsync(id);
+
+            if (product != null)
+            {
+                throw new Exception("Produto não encontrado no estoque!");
+            }
+
+            product.Name = productDto.Name;
+            product.Price = productDto.Price;
+            product.Stock = productDto.Stock;
+
+            _unitOfWork.Products.Update(product);
+            await _unitOfWork.CommitAsync();    
+
         }
     }
 }
