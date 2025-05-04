@@ -6,8 +6,6 @@ namespace Application.DTOs
     {
         public float Total { get; set; }
         public OrderStatus Status { get; set; }
-        public int UserId { get; set; }
-
         public List<OrderItemDTO> Items { get; set; } = new();
     }
 }

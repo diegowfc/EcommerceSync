@@ -1,6 +1,7 @@
 ﻿using Application.DTOs;
 using AutoMapper;
 using Domain.Entities.OrderEntity;
+using Domain.Entities.OrderItemEntity;
 using Domain.Enums.OrderStatus;
 using Domain.Interfaces.UnitOfWork;
 
@@ -21,17 +22,24 @@ namespace Application.Services.OrderServices
             order.Status = OrderStatus.Pending;
 
             float total = 0f;
+            var orderItems = new List<OrderItem>();
 
             foreach (var item in dto.Items)
             {
                 var product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
                 if (product == null)
-                    throw new Exception($"Produto não encontrado.");
+                    throw new Exception("Produto não encontrado.");
 
                 total += product.Price * item.Quantity;
+
+                var orderItem = _mapper.Map<OrderItem>(item);
+                orderItem.Product = product;
+
+                orderItems.Add(orderItem);
             }
 
             order.Total = total;
+            order.Items = orderItems;
 
             await _unitOfWork.Orders.AddAsync(order);
             await _unitOfWork.CommitAsync();

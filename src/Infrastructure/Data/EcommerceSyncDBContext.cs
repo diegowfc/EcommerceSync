@@ -15,5 +15,15 @@ namespace EcommerceSync.Infrastructure.Data
         public DbSet<Order> tab_order { get; set; }
         public DbSet<OrderItem> tab_order_item { get; set; }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Order>()
+                .HasMany(o => o.Items)
+                .WithOne(oi => oi.Order)
+                .HasForeignKey(oi => oi.OrderId)
+                .OnDelete(DeleteBehavior.Cascade);
+        }
     }
 }

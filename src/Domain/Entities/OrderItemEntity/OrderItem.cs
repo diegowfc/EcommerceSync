@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Domain.Entities.OrderEntity;
+using Domain.Entities.ProductEntity;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Domain.Entities.OrderItemEntity
@@ -13,9 +15,10 @@ namespace Domain.Entities.OrderItemEntity
         public int ProductId { get; set; }
         [Required]
         public int Quantity { get; set; }
-        [Required]
-        [Column(TypeName = "decimal(18,2)")]
-        public float UnitPrice { get; set; }
-        
+        [ForeignKey("OrderId")]
+        public Order Order { get; set; }
+        [ForeignKey("ProductId")]
+        public Product Product { get; set; }
+
     }
 }

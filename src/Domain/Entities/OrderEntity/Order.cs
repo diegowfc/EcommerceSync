@@ -1,4 +1,5 @@
-﻿using Domain.Enums.OrderStatus;
+﻿using Domain.Entities.OrderItemEntity;
+using Domain.Enums.OrderStatus;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -17,6 +18,7 @@ namespace Domain.Entities.OrderEntity
         public float Total {  get; set; }
         [Required]
         public int UserId { get; set; }
+        public List<OrderItem> Items { get; set; } = new();
 
         public void GenerateRandomUserId()
         {
