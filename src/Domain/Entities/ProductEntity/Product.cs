@@ -10,7 +10,7 @@ namespace Domain.Entities.ProductEntity
         [Required]
         public string Name { get; set; }
         [Required]
-        [Column(TypeName ="decimal(18,2")]
+        [Column(TypeName ="decimal(18,2)")]
         public float Price { get; set; }
         [Required] 
         public int Stock {  get; set; }
