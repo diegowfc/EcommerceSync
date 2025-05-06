@@ -18,9 +18,9 @@ namespace Infrastructure.Repositories.OrderRepository
             return await _dbSet.Where(x => x.UserId == userId).ToListAsync();
         }
 
-        public async Task<IEnumerable<Order>> GetOrderById(int orderId)
+        public async Task<IEnumerable<Order>> GetOrderByIdentifier(string orderId)
         {
-            return await _dbSet.Where(x => x.Id == orderId).ToListAsync();
+            return await _dbSet.Where(x => x.OrderIdentifier == orderId).ToListAsync();
         }
 
         public async Task<IEnumerable<Order>> GetOrdersByStatusAsync(OrderStatus status)

@@ -17,6 +17,9 @@ namespace Domain.Entities.OrderEntity
         [Column(TypeName = "decimal(18,2)")]
         public float Total {  get; set; }
         [Required]
+        [MaxLength(30)]
+        public string OrderIdentifier { get; set; } = string.Empty;
+        [Required]
         public int UserId { get; set; }
         public List<OrderItem> Items { get; set; } = new();
 

@@ -1,7 +1,8 @@
-﻿using Application.DTOs;
+﻿using Application.DTOs.OrderDtos;
 using AutoMapper;
 using Domain.Entities.OrderEntity;
 using Domain.Entities.OrderItemEntity;
+using Domain.Entities.ProductEntity;
 using Domain.Enums.OrderStatus;
 using Domain.Interfaces.UnitOfWork;
 
@@ -12,7 +13,7 @@ namespace Application.Services.OrderServices
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IMapper _mapper = mapper;
 
-        public async Task CreateOrderAsync(OrderDTO dto)
+        public async Task<int> CreateOrderAsync(OrderDTO dto)
         {
             if (dto.Items == null || !dto.Items.Any())
                 throw new Exception("O pedido deve conter ao menos um item.");
@@ -20,6 +21,7 @@ namespace Application.Services.OrderServices
             var order = _mapper.Map<Order>(dto);
             order.DateOfOrder = DateTime.UtcNow;
             order.Status = OrderStatus.Pending;
+            order.OrderIdentifier = GenerateOrderIdentifier(order.DateOfOrder);
 
             float total = 0f;
             var orderItems = new List<OrderItem>();
@@ -43,6 +45,8 @@ namespace Application.Services.OrderServices
 
             await _unitOfWork.Orders.AddAsync(order);
             await _unitOfWork.CommitAsync();
+
+            return order.Id;
         }
 
         public async Task DeleteOrderAsync(int id)
@@ -58,23 +62,39 @@ namespace Application.Services.OrderServices
                 
         }
 
+        public string GenerateOrderIdentifier(DateTime orderDate)
+        {
+            string prefix = "USP";
+            string datePart = orderDate.ToString("yyyyMMdd");
+            string randomSequence = new Random().Next(1, 10000).ToString("D4");
+
+            return $"{prefix}-{datePart}-{randomSequence}";
+        }
+
         public async Task<IEnumerable<OrderDTO>> GetAllOrdersAsync()
         {
             var orders = await _unitOfWork.Orders.GetAllAsync();
             return _mapper.Map<IEnumerable<OrderDTO>>(orders);
         }
 
-        public async Task UpdateOrderAsync(int id, OrderDTO dto)
+        public async Task<OrderDTO> GetOrderByIdAsync(int id)
+        {
+            var order = await _unitOfWork.Orders.GetByIdAsync(id);
+            return _mapper.Map<OrderDTO>(order);
+        }
+
+        public async Task UpdateOrderAsync(int id, OrderUpdateDTO dto)
         {
             throw new NotImplementedException();
         }
 
-        public async Task UpdateOrderStatusAsync(int id, OrderDTO dto)
+        public async Task UpdateOrderStatusAsync(int id, OrderUpdateDTO orderUpdateDTO)
         {
             var order = await _unitOfWork.Orders.GetByIdAsync(id);
 
             if (order != null) {
-                order.Status = dto.Status;
+                if (orderUpdateDTO.Status != null)
+                    order.Status = (OrderStatus)orderUpdateDTO.Status;
 
                 _unitOfWork.Orders.Update(order);
                 await _unitOfWork.CommitAsync();

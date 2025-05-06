@@ -1,4 +1,4 @@
-﻿using Application.DTOs.Product;
+﻿using Application.DTOs.ProductDtos;
 using AutoMapper;
 using Domain.Entities.ProductEntity;
 using Domain.Interfaces.UnitOfWork;
@@ -11,18 +11,20 @@ namespace Application.Services.ProductServices
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IMapper _mapper = mapper;
 
-        public async Task CreateProductAsync(ProductDTO productDto)
+        public async Task<int> CreateProductAsync(ProductDTO productDto)
         {
             var product = _mapper.Map<Product>(productDto);
             await _unitOfWork.Products.AddAsync(product);
             await _unitOfWork.CommitAsync();
+
+            return product.Id;
         }
 
         public async Task DeleteProductAsync(int id)
         {
             var product = await _unitOfWork.Products.GetByIdAsync(id);
             
-            if (product != null) {
+            if (product == null) {
                 throw new Exception("Produto não encontrado no estoque!");
             }
 
@@ -42,21 +44,23 @@ namespace Application.Services.ProductServices
             return _mapper.Map<ProductDTO>(products);
         }
 
-        public async Task UpdateProductAsync(int id, ProductDTO productDto)
+        public async Task UpdateProductAsync(int id, ProductUpdateDTO productUpdateDto)
         {
             var product = await _unitOfWork.Products.GetByIdAsync(id);
-
-            if (product != null)
-            {
+            if (product == null)
                 throw new Exception("Produto não encontrado no estoque!");
-            }
 
-            product.Name = productDto.Name;
-            product.Price = productDto.Price;
-            product.Stock = productDto.Stock;
+            if (productUpdateDto.Name != null)
+                product.Name = productUpdateDto.Name;
+
+            if (productUpdateDto.Price.HasValue)
+                product.Price = productUpdateDto.Price.Value;
+
+            if (productUpdateDto.Stock.HasValue)
+                product.Stock = productUpdateDto.Stock.Value;
 
             _unitOfWork.Products.Update(product);
-            await _unitOfWork.CommitAsync();    
+            await _unitOfWork.CommitAsync();
 
         }
     }

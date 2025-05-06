@@ -1,8 +1,8 @@
-﻿using Application.DTOs;
+﻿using Application.DTOs.OrderItemDtos;
 using AutoMapper;
 using Domain.Entities.OrderItemEntity;
 
-namespace Application.Mappings
+namespace Application.Mappings.OrderItemMapping
 {
     public class OrderItemProfile : Profile
     {

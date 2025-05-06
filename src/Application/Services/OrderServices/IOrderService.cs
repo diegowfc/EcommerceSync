@@ -1,14 +1,15 @@
-﻿using Application.DTOs;
-using Domain.Enums.OrderStatus;
+﻿using Application.DTOs.OrderDtos;
 
 namespace Application.Services.OrderServices
 {
     public interface IOrderService
     {
         Task<IEnumerable<OrderDTO>> GetAllOrdersAsync();
-        Task CreateOrderAsync(OrderDTO dto);
-        Task UpdateOrderAsync(int id,OrderDTO dto);
+        Task<OrderDTO> GetOrderByIdAsync(int id);
+        Task<int> CreateOrderAsync(OrderDTO dto);
+        Task UpdateOrderAsync(int id,OrderUpdateDTO dto);
         Task DeleteOrderAsync(int id);
-        Task UpdateOrderStatusAsync(int id, OrderDTO dto);
+        Task UpdateOrderStatusAsync(int id, OrderUpdateDTO dto);
+        string GenerateOrderIdentifier(DateTime orderDate);
     }
 }

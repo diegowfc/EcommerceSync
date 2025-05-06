@@ -1,4 +1,4 @@
-﻿using Application.DTOs.Product;
+﻿using Application.DTOs.ProductDtos;
 
 namespace Application.Services.ProductServices
 {
@@ -6,8 +6,8 @@ namespace Application.Services.ProductServices
     {
         Task<IEnumerable<ProductDTO>> GetAllProductsAsync();
         Task<ProductDTO> GetProductByIdAsync(int id);
-        Task CreateProductAsync(ProductDTO productDto);
-        Task UpdateProductAsync(int id, ProductDTO productDto);
+        Task<int> CreateProductAsync(ProductDTO productDto);
+        Task UpdateProductAsync(int id, ProductUpdateDTO productUpdateDto);
         Task DeleteProductAsync(int id);
     }
 }
