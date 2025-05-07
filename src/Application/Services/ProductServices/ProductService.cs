@@ -38,12 +38,6 @@ namespace Application.Services.ProductServices
             return _mapper.Map<IEnumerable<ProductDTO>>(products);
         }
 
-        public async Task<ProductDTO> GetProductByIdAsync(int id)
-        {
-            var products = await _unitOfWork.Products.GetByIdAsync(id);
-            return _mapper.Map<ProductDTO>(products);
-        }
-
         public async Task UpdateProductAsync(int id, ProductUpdateDTO productUpdateDto)
         {
             var product = await _unitOfWork.Products.GetByIdAsync(id);

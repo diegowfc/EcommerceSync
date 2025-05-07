@@ -1,6 +1,6 @@
 ﻿using Application.DTOs.ProductDtos;
 using Application.Services.ProductServices;
-using Microsoft.AspNetCore.Http;
+using Domain.Interfaces.ProductInterface;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Controllers.ProductControllers
@@ -10,10 +10,12 @@ namespace WebAPI.Controllers.ProductControllers
     public class ProductController : ControllerBase
     {
         private readonly IProductService _service;
+        private readonly IProductRepository _repository;
 
-        public ProductController(IProductService service)
+        public ProductController(IProductService service, IProductRepository repository)
         {
             _service = service;
+            _repository = repository;
         }
 
         [HttpGet]
@@ -25,7 +27,7 @@ namespace WebAPI.Controllers.ProductControllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProductById(int id)
         {
-            return Ok(await _service.GetProductByIdAsync(id));
+            return Ok(await _repository.GetProductByIdAsync(id));
         }
 
         [HttpPost]

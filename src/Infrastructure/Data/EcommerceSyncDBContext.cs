@@ -20,6 +20,11 @@ namespace EcommerceSync.Infrastructure.Data
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Order>()
+                 .Property(o => o.Status)
+                 .HasConversion<string>();
+
+
+            modelBuilder.Entity<Order>()
                 .HasMany(o => o.Items)
                 .WithOne(oi => oi.Order)
                 .HasForeignKey(oi => oi.OrderId)

@@ -25,7 +25,7 @@ namespace WebAPI.Controllers.OrderControllers
             return Ok(await _service.GetAllOrdersAsync());
         }
 
-        [HttpGet("order/{orderId}")]
+        [HttpGet("track/{orderIdentifier}")]
         public async Task<IActionResult> GetOrderByIdentifier(string orderIdentifier)
         {
             var order = await _repository.GetOrderByIdentifier(orderIdentifier);

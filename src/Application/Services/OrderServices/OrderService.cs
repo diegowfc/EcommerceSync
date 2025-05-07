@@ -1,8 +1,8 @@
 ﻿using Application.DTOs.OrderDtos;
+using Application.DTOs.ProductDtos;
 using AutoMapper;
 using Domain.Entities.OrderEntity;
 using Domain.Entities.OrderItemEntity;
-using Domain.Entities.ProductEntity;
 using Domain.Enums.OrderStatus;
 using Domain.Interfaces.UnitOfWork;
 
@@ -22,27 +22,9 @@ namespace Application.Services.OrderServices
             order.DateOfOrder = DateTime.UtcNow;
             order.Status = OrderStatus.Pending;
             order.OrderIdentifier = GenerateOrderIdentifier(order.DateOfOrder);
+            order.UserId = GenerateUserIdForTest();
 
-            float total = 0f;
-            var orderItems = new List<OrderItem>();
-
-            foreach (var item in dto.Items)
-            {
-                var product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
-                if (product == null)
-                    throw new Exception("Produto não encontrado.");
-
-                total += product.Price * item.Quantity;
-
-                var orderItem = _mapper.Map<OrderItem>(item);
-                orderItem.Product = product;
-
-                orderItems.Add(orderItem);
-            }
-
-            order.Total = total;
-            order.Items = orderItems;
-
+            await HandleOrderItem(order);
             await _unitOfWork.Orders.AddAsync(order);
             await _unitOfWork.CommitAsync();
 
@@ -62,25 +44,16 @@ namespace Application.Services.OrderServices
                 
         }
 
-        public string GenerateOrderIdentifier(DateTime orderDate)
-        {
-            string prefix = "USP";
-            string datePart = orderDate.ToString("yyyyMMdd");
-            string randomSequence = new Random().Next(1, 10000).ToString("D4");
-
-            return $"{prefix}-{datePart}-{randomSequence}";
-        }
-
-        public async Task<IEnumerable<OrderDTO>> GetAllOrdersAsync()
+        public async Task<IEnumerable<OrderReadDTO>> GetAllOrdersAsync()
         {
             var orders = await _unitOfWork.Orders.GetAllAsync();
-            return _mapper.Map<IEnumerable<OrderDTO>>(orders);
+            return _mapper.Map<IEnumerable<OrderReadDTO>>(orders);
         }
 
-        public async Task<OrderDTO> GetOrderByIdAsync(int id)
+        public async Task<OrderReadDTO> GetOrderByIdAsync(int id)
         {
             var order = await _unitOfWork.Orders.GetByIdAsync(id);
-            return _mapper.Map<OrderDTO>(order);
+            return _mapper.Map<OrderReadDTO>(order);
         }
 
         public async Task UpdateOrderAsync(int id, OrderUpdateDTO dto)
@@ -102,6 +75,57 @@ namespace Application.Services.OrderServices
             {
                 throw new Exception("Pedido não encontrado!");
             }
+        }
+
+        public string GenerateOrderIdentifier(DateTime orderDate)
+        {
+            string prefix = "USP";
+            string datePart = orderDate.ToString("yyyyMMdd");
+            string randomSequence = new Random().Next(1, 10000).ToString("D4");
+
+            return $"{prefix}-{datePart}-{randomSequence}";
+        }
+
+        public int GenerateUserIdForTest()
+        {
+            var random = new Random();
+            return random.Next(1, 2);
+        }
+
+        public async Task HandleOrderItem(Order order)
+        {
+            float total = 0f;
+            var orderItems = new List<OrderItem>();
+
+            foreach (var item in order.Items)
+            {
+                var product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
+                if (product == null)
+                    throw new Exception("Produto não encontrado.");
+
+                total += product.Price * item.Quantity;
+
+                var orderItem = _mapper.Map<OrderItem>(item);
+                orderItem.Product = product;
+
+                orderItems.Add(orderItem);
+                await HandleProductStock(orderItem);
+            }
+
+            order.Total = total;
+            order.Items = orderItems;
+        }
+
+        public async Task HandleProductStock(OrderItem item)
+        {
+            var product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
+            if (product == null)
+                throw new Exception("Produto não encontrado.");
+
+            product.Stock -= item.Quantity;
+
+            _unitOfWork.Products.Update(product);
+            await _unitOfWork.CommitAsync();
         }
     }
 }

@@ -4,8 +4,8 @@ namespace Application.Services.OrderServices
 {
     public interface IOrderService
     {
-        Task<IEnumerable<OrderDTO>> GetAllOrdersAsync();
-        Task<OrderDTO> GetOrderByIdAsync(int id);
+        Task<IEnumerable<OrderReadDTO>> GetAllOrdersAsync();
+        Task<OrderReadDTO> GetOrderByIdAsync(int id);
         Task<int> CreateOrderAsync(OrderDTO dto);
         Task UpdateOrderAsync(int id,OrderUpdateDTO dto);
         Task DeleteOrderAsync(int id);

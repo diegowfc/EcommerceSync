@@ -23,11 +23,5 @@ namespace Domain.Entities.OrderEntity
         public int UserId { get; set; }
         public List<OrderItem> Items { get; set; } = new();
 
-        public void GenerateRandomUserId()
-        {
-            var random = new Random();
-            UserId = random.Next(1, 2);
-        }
-
     }
 }
