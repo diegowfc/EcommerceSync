@@ -22,5 +22,10 @@ namespace Infrastructure.Repositories.ProductRepository
         {
             return await _dbSet.Where(p => p.Stock > 0).ToListAsync();
         }
+
+        public IQueryable<Product> Query()
+        {
+            return _dbSet;
+        }
     }
 }

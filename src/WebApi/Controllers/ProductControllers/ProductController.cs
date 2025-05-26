@@ -19,9 +19,9 @@ namespace WebAPI.Controllers.ProductControllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllProducts()
+        public async Task<IActionResult> GetAllProducts(int page = 1, int pageSize = 36, CancellationToken cancellationToken = default)
         {
-            return Ok(await _service.GetAllProductsAsync());
+            return Ok(await _service.GetProductsAsync(page, pageSize, cancellationToken));
         }
 
         [HttpGet("{id}")]

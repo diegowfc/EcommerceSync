@@ -7,5 +7,6 @@ namespace Domain.Interfaces.ProductInterface
     {
         Task<IEnumerable<Product>> GetProductsInStockAsync();
         Task<Product> GetProductByIdAsync(int id);
+        IQueryable<Product> Query();
     }
 }

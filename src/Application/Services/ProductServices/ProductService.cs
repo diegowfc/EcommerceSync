@@ -1,7 +1,11 @@
-﻿using Application.DTOs.ProductDtos;
+﻿using Application.DTOs.PagedResultsDTO;
+using Application.DTOs.ProductDtos;
 using AutoMapper;
 using Domain.Entities.ProductEntity;
 using Domain.Interfaces.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Dynamic.Core;
+
 
 namespace Application.Services.ProductServices
 {
@@ -32,10 +36,39 @@ namespace Application.Services.ProductServices
             await _unitOfWork.CommitAsync();
         }
 
-        public async Task<IEnumerable<ProductDTO>> GetAllProductsAsync()
+        public async Task<PagedProductsDTO<ProductDTO>> GetProductsAsync(
+            int page,
+            int pageSize,
+            CancellationToken cancellationToken = default)
         {
-            var products = await _unitOfWork.Products.GetAllAsync();
-            return _mapper.Map<IEnumerable<ProductDTO>>(products);
+            page = Math.Max(page, 1);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            var query = _unitOfWork.Products
+                  .Query()
+                  .OrderBy(p => p.Id);
+
+            var countTask = query.CountAsync(cancellationToken);
+            var itemsTask = query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(p => new ProductDTO
+                {
+                    Name = p.Name,
+                    Price = p.Price,
+                    Stock = p.Stock
+                })
+                .ToListAsync(cancellationToken);
+
+            await Task.WhenAll(countTask, itemsTask);
+
+            return new PagedProductsDTO<ProductDTO>
+            {
+                Items = itemsTask.Result,
+                TotalCount = countTask.Result,
+                Page = page,
+                PageSize = pageSize
+            };
         }
 
         public async Task UpdateProductAsync(int id, ProductUpdateDTO productUpdateDto)
