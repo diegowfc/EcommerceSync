@@ -48,24 +48,22 @@ namespace Application.Services.ProductServices
                   .Query()
                   .OrderBy(p => p.Id);
 
-            var countTask = query.CountAsync(cancellationToken);
-            var itemsTask = query
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(p => new ProductDTO
-                {
-                    Name = p.Name,
-                    Price = p.Price,
-                    Stock = p.Stock
-                })
-                .ToListAsync(cancellationToken);
-
-            await Task.WhenAll(countTask, itemsTask);
+            var total = await query.CountAsync(cancellationToken);
+            var items = await query
+               .Skip((page - 1) * pageSize)
+               .Take(pageSize)
+               .Select(p => new ProductDTO
+               {
+                   Name = p.Name,
+                   Price = p.Price,
+                   Stock = p.Stock
+               })
+               .ToListAsync(cancellationToken);
 
             return new PagedProductsDTO<ProductDTO>
             {
-                Items = itemsTask.Result,
-                TotalCount = countTask.Result,
+                Items = items,
+                TotalCount = total,
                 Page = page,
                 PageSize = pageSize
             };
