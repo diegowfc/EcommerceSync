@@ -36,11 +36,11 @@ namespace WebAPI.Controllers.ProductControllers
         //}
 
 
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> Delete(int id)
-        //{
-        //    await _productService.DeleteProductAsync(id);
-        //    return NoContent();
-        //}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var correlationID = await _productService.DeleteProductAsync(id);
+            return Accepted(new { CorrelationId = correlationID });
+        }
     }
 }

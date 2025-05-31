@@ -8,6 +8,6 @@ namespace Application.Services.ProductServices
         Task<PagedProductsDTO<ProductDTO>> GetProductsAsync(int page, int pageSize, CancellationToken cancellationToken = default);
         Task<ProductCreatedResponseDTO> CreateProductAsync(ProductDTO productDto);
         Task UpdateProductAsync(int id, ProductUpdateDTO productUpdateDto);
-        Task DeleteProductAsync(int id);
+        Task<ProductDeletedResponseDTO> DeleteProductAsync(int id);
     }
 }

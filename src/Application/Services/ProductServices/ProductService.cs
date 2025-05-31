@@ -47,9 +47,28 @@ namespace Application.Services.ProductServices
         }
 
 
-        public async Task DeleteProductAsync(int id)
+        public async Task<ProductDeletedResponseDTO> DeleteProductAsync(int id)
         {
-            throw new NotImplementedException();
+            var exists = await _unitOfWork.Products.GetByIdAsync(id);
+
+            if (exists is null)
+                throw new Exception($"Produto com ID {id} não encontrado.");
+
+            var correlationId = Guid.NewGuid();
+
+            await _publishEndpoint.Publish(new ProductDeletedEvent
+            {
+                CorrelationID = correlationId,
+                ProductID = id
+            });
+
+            var productDeletedResponse = new ProductDeletedResponseDTO
+            {
+                CorrelationId = correlationId,
+                Message = $"Evento de delete do produto iniciado (ID: {correlationId})"
+            };
+
+            return productDeletedResponse;
         }
 
         public async Task<PagedProductsDTO<ProductDTO>> GetProductsAsync(int page, int pageSize, CancellationToken cancellationToken = default)

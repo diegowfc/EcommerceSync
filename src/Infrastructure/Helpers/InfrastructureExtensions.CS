@@ -18,6 +18,10 @@ namespace Infrastructure.Helpers
             services.AddMassTransit(x =>
             {
                 x.AddConsumer<ProductCreatedConsumer>();
+                x.AddConsumer<ProductDeletedConsumer>();
+
+                x.AddConsumer<OrderCreatedConsumer>();
+                x.AddConsumer<OrderDeletedConsumer>();
 
                 x.UsingRabbitMq((context, cfgRabbit) =>
                 {
@@ -35,6 +39,24 @@ namespace Infrastructure.Helpers
                     {
                         e.ConfigureConsumer<ProductCreatedConsumer>(context);
 
+                        e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+                    });
+
+                    cfgRabbit.ReceiveEndpoint("product-deleted-queue", e =>
+                    {
+                        e.ConfigureConsumer<ProductDeletedConsumer>(context);
+                        e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+                    });
+
+                    cfgRabbit.ReceiveEndpoint("order-created-queue", e =>
+                    {
+                        e.ConfigureConsumer<OrderCreatedConsumer>(context);
+                        e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+                    });
+
+                    cfgRabbit.ReceiveEndpoint("order-deleted-queue", e =>
+                    {
+                        e.ConfigureConsumer<OrderDeletedConsumer>(context);
                         e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
                     });
                 });
