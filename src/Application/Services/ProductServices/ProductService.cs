@@ -1,45 +1,58 @@
 ﻿using Application.DTOs.PagedResultsDTO;
 using Application.DTOs.ProductDtos;
 using AutoMapper;
-using Domain.Entities.ProductEntity;
+using Domain.Event;
 using Domain.Interfaces.UnitOfWork;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Dynamic.Core;
-
 
 namespace Application.Services.ProductServices
 {
-    public class ProductService(IUnitOfWork unitOfWork, IMapper mapper) : IProductService
+    public class ProductService : IProductService
     {
 
-        private readonly IUnitOfWork _unitOfWork = unitOfWork;
-        private readonly IMapper _mapper = mapper;
+        private readonly IPublishEndpoint _publishEndpoint;
+        private readonly IMapper _mapper;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public async Task<int> CreateProductAsync(ProductDTO productDto)
+        public ProductService(
+            IPublishEndpoint publishEndpoint,
+            IUnitOfWork unitOfWork,
+            IMapper mapper)
         {
-            var product = _mapper.Map<Product>(productDto);
-            await _unitOfWork.Products.AddAsync(product);
-            await _unitOfWork.CommitAsync();
-
-            return product.Id;
+            _publishEndpoint = publishEndpoint;
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
+
+        public async Task<ProductCreatedResponseDTO> CreateProductAsync(ProductDTO productDto)
+        {
+            var correlationId = Guid.NewGuid();
+
+            await _publishEndpoint.Publish(new ProductCreatedEvent
+            {
+                CorrelationId = correlationId,
+                Name = productDto.Name,
+                Price = productDto.Price,
+                Stock = productDto.Stock
+            });
+
+            var productCreatedResponse = new ProductCreatedResponseDTO
+            {
+                CorrelationId = correlationId,
+                Message = $"Evento de criação do produto iniciado (ID: {correlationId})"
+            };
+
+            return productCreatedResponse;
+        }
+
 
         public async Task DeleteProductAsync(int id)
         {
-            var product = await _unitOfWork.Products.GetByIdAsync(id);
-            
-            if (product == null) {
-                throw new Exception("Produto não encontrado no estoque!");
-            }
-
-            _unitOfWork.Products.Remove(product);
-            await _unitOfWork.CommitAsync();
+            throw new NotImplementedException();
         }
 
-        public async Task<PagedProductsDTO<ProductDTO>> GetProductsAsync(
-            int page,
-            int pageSize,
-            CancellationToken cancellationToken = default)
+        public async Task<PagedProductsDTO<ProductDTO>> GetProductsAsync(int page, int pageSize, CancellationToken cancellationToken = default)
         {
             page = Math.Max(page, 1);
             pageSize = Math.Clamp(pageSize, 1, 100);
@@ -71,22 +84,8 @@ namespace Application.Services.ProductServices
 
         public async Task UpdateProductAsync(int id, ProductUpdateDTO productUpdateDto)
         {
-            var product = await _unitOfWork.Products.GetByIdAsync(id);
-            if (product == null)
-                throw new Exception("Produto não encontrado no estoque!");
-
-            if (productUpdateDto.Name != null)
-                product.Name = productUpdateDto.Name;
-
-            if (productUpdateDto.Price.HasValue)
-                product.Price = productUpdateDto.Price.Value;
-
-            if (productUpdateDto.Stock.HasValue)
-                product.Stock = productUpdateDto.Stock.Value;
-
-            _unitOfWork.Products.Update(product);
-            await _unitOfWork.CommitAsync();
-
+            // Em vez de atualizar aqui, publique um ProductUpdatedEvent  
+            throw new NotImplementedException();
         }
     }
 }

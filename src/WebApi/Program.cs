@@ -5,6 +5,7 @@ using Domain.Interfaces.OrderInterface;
 using Domain.Interfaces.ProductInterface;
 using Domain.Interfaces.UnitOfWork;
 using EcommerceSync.Infrastructure.Data;
+using Infrastructure.Helpers;
 using Infrastructure.Repositories.OrderRepository;
 using Infrastructure.Repositories.ProductRepository;
 using Infrastructure.Repositories.UoWRepository;
@@ -27,6 +28,8 @@ namespace WebAPI
 
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
+
+            builder.Services.AddMessaging(builder.Configuration);
 
             builder.Services.AddAutoMapper(typeof(OrderProfile).Assembly);
 

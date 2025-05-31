@@ -1,6 +1,5 @@
 ﻿using Application.DTOs.ProductDtos;
 using Application.Services.ProductServices;
-using Domain.Interfaces.ProductInterface;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Controllers.ProductControllers
@@ -9,47 +8,39 @@ namespace WebAPI.Controllers.ProductControllers
     [ApiController]
     public class ProductController : ControllerBase
     {
-        private readonly IProductService _service;
-        private readonly IProductRepository _repository;
+        private readonly IProductService _productService;
 
-        public ProductController(IProductService service, IProductRepository repository)
+        public ProductController(IProductService service)
         {
-            _service = service;
-            _repository = repository;
+            _productService = service;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAllProducts(int page = 1, int pageSize = 36, CancellationToken cancellationToken = default)
         {
-            return Ok(await _service.GetProductsAsync(page, pageSize, cancellationToken));
-        }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetProductById(int id)
-        {
-            return Ok(await _repository.GetProductByIdAsync(id));
+            return Ok(await _productService.GetProductsAsync(page, pageSize, cancellationToken));
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(ProductDTO dto)
+        public async Task<IActionResult> Create(ProductDTO productDto)
         {
-            var createdProduct = await _service.CreateProductAsync(dto);
-            return CreatedAtAction(nameof(GetProductById), new { id = createdProduct }, dto);
+            var correlationID = await _productService.CreateProductAsync(productDto);
+            return Accepted(new { CorrelationId = correlationID });
         }
 
-        [HttpPatch("{id}")]
-        public async Task<IActionResult> Update(int id, ProductUpdateDTO dto)
-        {
-            await _service.UpdateProductAsync(id, dto);
-            return NoContent();
-        }
+        //[HttpPatch("{id}")]
+        //public async Task<IActionResult> Update(int id, ProductUpdateDTO dto)
+        //{
+        //    await _productService.UpdateProductAsync(id, dto);
+        //    return NoContent();
+        //}
 
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            await _service.DeleteProductAsync(id);
-            return NoContent();
-        }
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> Delete(int id)
+        //{
+        //    await _productService.DeleteProductAsync(id);
+        //    return NoContent();
+        //}
     }
 }

@@ -13,16 +13,6 @@ namespace Infrastructure.Repositories.OrderRepository
         {
         }
 
-        public async Task<IEnumerable<Order>> GetOrdersByUserIdAsync(int userId)
-        {
-            return await _dbSet.Where(x => x.UserId == userId).ToListAsync();
-        }
-
-        public async Task<IEnumerable<Order>> GetOrderByIdentifier(string orderId)
-        {
-            return await _dbSet.Where(x => x.OrderIdentifier == orderId).ToListAsync();
-        }
-
         public async Task<IEnumerable<Order>> GetOrdersByStatusAsync(OrderStatus status)
         {
             return await _dbSet.Where(order => order.Status == status).ToListAsync();
