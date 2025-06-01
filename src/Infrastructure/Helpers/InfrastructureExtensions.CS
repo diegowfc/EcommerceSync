@@ -37,19 +37,24 @@ namespace Infrastructure.Helpers
 
                     cfgRabbit.ReceiveEndpoint("product-created-queue", e =>
                     {
+                        e.PrefetchCount = 64;
+                        e.ConcurrentMessageLimit = 16;
                         e.ConfigureConsumer<ProductCreatedConsumer>(context);
-
                         e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
                     });
 
                     cfgRabbit.ReceiveEndpoint("product-deleted-queue", e =>
                     {
+                        e.PrefetchCount = 64;          
+                        e.ConcurrentMessageLimit = 16;
                         e.ConfigureConsumer<ProductDeletedConsumer>(context);
                         e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
                     });
 
                     cfgRabbit.ReceiveEndpoint("order-created-queue", e =>
                     {
+                        e.PrefetchCount = 64;
+                        e.ConcurrentMessageLimit = 16;
                         e.ConfigureConsumer<OrderCreatedConsumer>(context);
                         e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
                     });
