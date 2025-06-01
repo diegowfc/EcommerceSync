@@ -1,5 +1,6 @@
 ﻿using Application.Consumers;
 using Domain.Event;
+using Infrastructure.Consumers;
 using MassTransit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
