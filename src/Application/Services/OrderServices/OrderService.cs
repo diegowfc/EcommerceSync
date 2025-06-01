@@ -5,13 +5,20 @@ using Domain.Entities.OrderEntity;
 using Domain.Entities.OrderItemEntity;
 using Domain.Enums.OrderStatus;
 using Domain.Interfaces.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services.OrderServices
 {
-    public class OrderService(IUnitOfWork unitOfWork, IMapper mapper) : IOrderService
+    public class OrderService : IOrderService
     {
-        private readonly IUnitOfWork _unitOfWork = unitOfWork;
-        private readonly IMapper _mapper = mapper;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+
+        public OrderService(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
 
         public async Task<int> CreateOrderAsync(OrderDTO dto)
         {
@@ -25,6 +32,7 @@ namespace Application.Services.OrderServices
             order.UserId = GenerateUserIdForTest();
 
             await HandleOrderItem(order);
+
             await _unitOfWork.Orders.AddAsync(order);
             await _unitOfWork.CommitAsync();
 
@@ -34,14 +42,11 @@ namespace Application.Services.OrderServices
         public async Task DeleteOrderAsync(int id)
         {
             var order = await _unitOfWork.Orders.GetByIdAsync(id);
-
-            if (order != null) {
-                _unitOfWork.Orders.Remove(order);
-                await _unitOfWork.CommitAsync();
-            } else {
+            if (order == null)
                 throw new Exception("Pedido não encontrado!");
-            }
-                
+
+            _unitOfWork.Orders.Remove(order);
+            await _unitOfWork.CommitAsync();
         }
 
         public async Task<IEnumerable<OrderReadDTO>> GetAllOrdersAsync()
@@ -64,17 +69,14 @@ namespace Application.Services.OrderServices
         public async Task UpdateOrderStatusAsync(int id, OrderUpdateDTO orderUpdateDTO)
         {
             var order = await _unitOfWork.Orders.GetByIdAsync(id);
-
-            if (order != null) {
-                if (orderUpdateDTO.Status != null)
-                    order.Status = (OrderStatus)orderUpdateDTO.Status;
-
-                _unitOfWork.Orders.Update(order);
-                await _unitOfWork.CommitAsync();
-            } else
-            {
+            if (order == null)
                 throw new Exception("Pedido não encontrado!");
-            }
+
+            if (orderUpdateDTO.Status != null)
+                order.Status = (OrderStatus)orderUpdateDTO.Status;
+
+            _unitOfWork.Orders.Update(order);
+            await _unitOfWork.CommitAsync();
         }
 
         public string GenerateOrderIdentifier(DateTime orderDate)
@@ -82,7 +84,6 @@ namespace Application.Services.OrderServices
             string prefix = "USP";
             string datePart = orderDate.ToString("yyyyMMdd");
             string randomSequence = new Random().Next(1, 10000).ToString("D4");
-
             return $"{prefix}-{datePart}-{randomSequence}";
         }
 
@@ -94,38 +95,37 @@ namespace Application.Services.OrderServices
 
         public async Task HandleOrderItem(Order order)
         {
+            var productIds = order.Items
+                                  .Select(i => i.ProductId)
+                                  .Distinct()
+                                  .ToList();
+
+            var orderProducts = await _unitOfWork
+                .Products
+                .Query()
+                .Where(p => productIds.Contains(p.Id))
+                .ToListAsync();
+
             float total = 0f;
-            var orderItems = new List<OrderItem>();
+            var orderItemsRefatorados = new List<OrderItem>();
 
             foreach (var item in order.Items)
             {
-                var product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
-                if (product == null)
-                    throw new Exception("Produto não encontrado.");
+                var produto = orderProducts.Single(p => p.Id == item.ProductId);
 
-                total += product.Price * item.Quantity;
+                total += produto.Price * item.Quantity;
 
                 var orderItem = _mapper.Map<OrderItem>(item);
-                orderItem.Product = product;
+                orderItem.Product = produto;
 
-                orderItems.Add(orderItem);
-                await HandleProductStock(orderItem);
+                produto.Stock -= item.Quantity;
+
+                _unitOfWork.Products.Update(produto);
+                orderItemsRefatorados.Add(orderItem);
             }
 
             order.Total = total;
-            order.Items = orderItems;
-        }
-
-        public async Task HandleProductStock(OrderItem item)
-        {
-            var product = await _unitOfWork.Products.GetByIdAsync(item.ProductId);
-            if (product == null)
-                throw new Exception("Produto não encontrado.");
-
-            product.Stock -= item.Quantity;
-
-            _unitOfWork.Products.Update(product);
-            await _unitOfWork.CommitAsync();
+            order.Items = orderItemsRefatorados;
         }
     }
 }
