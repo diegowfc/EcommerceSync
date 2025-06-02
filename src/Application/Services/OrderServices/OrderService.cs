@@ -31,13 +31,49 @@ namespace Application.Services.OrderServices
             order.OrderIdentifier = GenerateOrderIdentifier(order.DateOfOrder);
             order.UserId = GenerateUserIdForTest();
 
-            await HandleOrderItem(order);
+            var productIds = order.Items
+                                  .Select(i => i.ProductId)
+                                  .Distinct()
+                                  .ToList();
+
+            var orderProducts = await _unitOfWork.Products
+                .Query()
+                .Where(p => productIds.Contains(p.Id))
+                .ToListAsync();
+
+            var produtosPorId = orderProducts.ToDictionary(p => p.Id);
+
+            foreach (var item in order.Items)
+            {
+                var produto = produtosPorId[item.ProductId];
+                if (produto.Stock < item.Quantity)
+                    throw new Exception($"Estoque insuficiente para o produto {produto.Id}");
+            }
+
+            float total = 0f;
+            var orderItemsRefatorados = new List<OrderItem>();
+            foreach (var item in order.Items)
+            {
+                var produto = produtosPorId[item.ProductId];
+                total += produto.Price * item.Quantity;
+
+                var orderItem = _mapper.Map<OrderItem>(item);
+                orderItem.Product = produto;
+
+                produto.Stock -= item.Quantity;
+
+                orderItemsRefatorados.Add(orderItem);
+            }
+
+            order.Total = total;
+            order.Items = orderItemsRefatorados;
 
             await _unitOfWork.Orders.AddAsync(order);
             await _unitOfWork.CommitAsync();
 
             return order.Id;
         }
+
 
         public async Task DeleteOrderAsync(int id)
         {
@@ -91,41 +127,6 @@ namespace Application.Services.OrderServices
         {
             var random = new Random();
             return random.Next(1, 2);
-        }
-
-        public async Task HandleOrderItem(Order order)
-        {
-            var productIds = order.Items
-                                  .Select(i => i.ProductId)
-                                  .Distinct()
-                                  .ToList();
-
-            var orderProducts = await _unitOfWork
-                .Products
-                .Query()
-                .Where(p => productIds.Contains(p.Id))
-                .ToListAsync();
-
-            float total = 0f;
-            var orderItemsRefatorados = new List<OrderItem>();
-
-            foreach (var item in order.Items)
-            {
-                var produto = orderProducts.Single(p => p.Id == item.ProductId);
-
-                total += produto.Price * item.Quantity;
-
-                var orderItem = _mapper.Map<OrderItem>(item);
-                orderItem.Product = produto;
-
-                produto.Stock -= item.Quantity;
-
-                _unitOfWork.Products.Update(produto);
-                orderItemsRefatorados.Add(orderItem);
-            }
-
-            order.Total = total;
-            order.Items = orderItemsRefatorados;
         }
     }
 }
