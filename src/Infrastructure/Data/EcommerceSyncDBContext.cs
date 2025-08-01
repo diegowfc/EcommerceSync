@@ -1,6 +1,7 @@
 ﻿using Domain.Entities.OrderEntity;
 using Domain.Entities.OrderItemEntity;
 using Domain.Entities.ProductEntity;
+using Domain.Entities.UserEntity;
 using Microsoft.EntityFrameworkCore;
 
 namespace EcommerceSync.Infrastructure.Data
@@ -14,6 +15,7 @@ namespace EcommerceSync.Infrastructure.Data
         public DbSet<Product> tab_products { get; set; }
         public DbSet<Order> tab_order { get; set; }
         public DbSet<OrderItem> tab_order_item { get; set; }
+        public DbSet<User> tab_user { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

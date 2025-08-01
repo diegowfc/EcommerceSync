@@ -1,5 +1,6 @@
 ﻿using Domain.Interfaces.OrderInterface;
 using Domain.Interfaces.ProductInterface;
+using Domain.Interfaces.UserInterface;
 
 namespace Domain.Interfaces.UnitOfWork
 {
@@ -7,6 +8,7 @@ namespace Domain.Interfaces.UnitOfWork
     {
         IOrderRepository Orders { get; }
         IProductRepository Products { get; }
+        IUserRepository Users { get; }
         Task<int> CommitAsync();
     }
 }

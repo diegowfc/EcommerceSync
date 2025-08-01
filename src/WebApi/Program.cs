@@ -1,13 +1,16 @@
 using Application.Mappings.OrderMapping;
 using Application.Services.OrderServices;
 using Application.Services.ProductServices;
+using Application.Services.UserServices;
 using Domain.Interfaces.OrderInterface;
 using Domain.Interfaces.ProductInterface;
 using Domain.Interfaces.UnitOfWork;
+using Domain.Interfaces.UserInterface;
 using EcommerceSync.Infrastructure.Data;
 using Infrastructure.Repositories.OrderRepository;
 using Infrastructure.Repositories.ProductRepository;
 using Infrastructure.Repositories.UoWRepository;
+using Infrastructure.Repositories.UserRepository;
 using Microsoft.EntityFrameworkCore;
 
 namespace WebAPI
@@ -23,10 +26,13 @@ namespace WebAPI
 
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IUserService, UserService>();
+
 
             builder.Services.AddAutoMapper(typeof(OrderProfile).Assembly);
 

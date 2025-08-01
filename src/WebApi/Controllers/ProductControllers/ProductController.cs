@@ -37,14 +37,6 @@ namespace WebAPI.Controllers.ProductControllers
             return CreatedAtAction(nameof(GetProductById), new { id = createdProduct }, dto);
         }
 
-        [HttpPatch("{id}")]
-        public async Task<IActionResult> Update(int id, ProductUpdateDTO dto)
-        {
-            await _service.UpdateProductAsync(id, dto);
-            return NoContent();
-        }
-
-
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
