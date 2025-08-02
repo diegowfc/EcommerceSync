@@ -1,4 +1,6 @@
-﻿using Domain.Interfaces.OrderInterface;
+﻿using Domain.Interfaces.CartInterface;
+using Domain.Interfaces.OrderInterface;
+using Domain.Interfaces.PaymentInterface;
 using Domain.Interfaces.ProductInterface;
 using Domain.Interfaces.UnitOfWork;
 using Domain.Interfaces.UserInterface;
@@ -7,26 +9,21 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.UoWRepository
 {
-    public class UnitOfWork : IUnitOfWork
+    public class UnitOfWork(
+        EcommerceSyncDbContext context,
+        IOrderRepository orderRepository,
+        IProductRepository productRepository,
+        IUserRepository userRepository,
+        ICartRepository cartRepository,
+        IPaymentRepository paymentRepository) : IUnitOfWork
     {
-        private readonly EcommerceSyncDbContext _context;
+        private readonly EcommerceSyncDbContext _context = context;
 
-        public IOrderRepository Orders { get; }
-        public IProductRepository Products { get; }
-        public IUserRepository Users { get; }
-
-
-        public UnitOfWork(
-            EcommerceSyncDbContext context, 
-            IOrderRepository orderRepository, 
-            IProductRepository productRepository, 
-            IUserRepository userRepository)
-        {
-            _context = context;
-            Orders = orderRepository;
-            Products = productRepository;
-            Users = userRepository;
-        }
+        public IOrderRepository Orders { get; } = orderRepository;
+        public IProductRepository Products { get; } = productRepository;
+        public IUserRepository Users { get; } = userRepository;
+        public ICartRepository Carts { get; } = cartRepository;
+        public IPaymentRepository Payments { get; } = paymentRepository;
 
         public async Task<int> CommitAsync()
         {

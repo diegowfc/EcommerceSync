@@ -9,21 +9,25 @@ namespace WebAPI.Controllers.UserControllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserController(IUserService service) : ControllerBase
     {
-        private readonly IUserService _service;
-
-        public UserController(IUserService service)
-        {
-            _service = service;
-            //_repository = repository;
-        }
+        private readonly IUserService _service = service;
 
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUser(UserCreateDto userDto)
         {
             await _service.RegisterUser(userDto);
             return StatusCode(201, new { message = "Usuário criado com sucesso" });
+        }
+
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetUserInformation([FromRoute] int id)
+        {
+            var user = await _service.GetByIdAsync(id);
+            if (user == null)
+                return NotFound(new { message = $"Usuário {id} não encontrado." });
+
+            return Ok(user);
         }
     }
 }

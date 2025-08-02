@@ -1,15 +1,8 @@
-﻿using Application.DTOs.ProductDtos;
-using Application.DTOs.UserDtos;
+﻿using Application.DTOs.UserDtos;
 using AutoMapper;
-using Domain.Entities.ProductEntity;
 using Domain.Entities.UserEntity;
 using Domain.Interfaces.UnitOfWork;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Services.UserServices
 {
@@ -50,6 +43,13 @@ namespace Application.Services.UserServices
                 HashAlgorithmName.SHA256
             );
             return pbkdf2.GetBytes(hashSize);
+        }
+
+        public async Task<UserResponseDTO> GetByIdAsync(int id)
+        {
+            var userEntity = await _unitOfWork.Users.GetUserByIdAsync(id);
+
+            return _mapper.Map<UserResponseDTO>(userEntity);
         }
     }
 }

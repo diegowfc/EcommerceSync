@@ -7,11 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.OrderRepository
 {
-    public class OrderRepository : RepositoryBase<Order>, IOrderRepository
+    public class OrderRepository(EcommerceSyncDbContext context) : RepositoryBase<Order>(context), IOrderRepository
     {
-        public OrderRepository(EcommerceSyncDbContext context) : base(context)
-        {
-
-        }
     }
 }

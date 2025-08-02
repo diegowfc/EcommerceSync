@@ -7,12 +7,8 @@ using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 namespace Infrastructure.Repositories.ProductRepository
 {
-    public class ProductRepository : RepositoryBase<Product>, IProductRepository
+    public class ProductRepository(EcommerceSyncDbContext context) : RepositoryBase<Product>(context), IProductRepository
     {
-        public ProductRepository(EcommerceSyncDbContext context) : base(context)
-        {
-        }
-
         public async Task<Product> GetProductByIdAsync(int id)
         {
             return await _dbSet.FirstOrDefaultAsync(p => p.Id == id);

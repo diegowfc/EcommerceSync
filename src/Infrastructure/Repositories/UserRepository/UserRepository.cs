@@ -2,14 +2,15 @@
 using Domain.Interfaces.UserInterface;
 using EcommerceSync.Infrastructure.Data;
 using Infrastructure.Repositories.RepositoryBase;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Repositories.UserRepository
 {
-    public class UserRepository: RepositoryBase<User>, IUserRepository
+    public class UserRepository(EcommerceSyncDbContext context) : RepositoryBase<User>(context), IUserRepository
     {
-        public UserRepository(EcommerceSyncDbContext context) : base(context)
+        public async Task<User> GetUserByIdAsync(int id)
         {
-
+            return await _dbSet.FirstOrDefaultAsync(p => p.Id == id);
         }
     }
 }
