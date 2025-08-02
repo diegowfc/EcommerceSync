@@ -53,6 +53,15 @@ namespace WebAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            var host = builder.Configuration["ConnectionStrings:DefaultConnection:Host"];
+            var port = builder.Configuration["ConnectionStrings:DefaultConnection:Port"];
+            var db = builder.Configuration["ConnectionStrings:DefaultConnection:Database"];
+            var user = builder.Configuration["ConnectionStrings:DefaultConnection:Username"];
+            var pwd = builder.Configuration["ConnectionStrings:DefaultConnection:Password"];
+            var connStr = $"Host={host};Port={port};Database={db};Username={user};Password={pwd};"; //LOCAL
+            //var connStr = $"Host={host};Database={db};Username={user};Password={pwd};SSL Mode=Require;Trust Server Certificate=true"; //SUPABASE
+            builder.Services.AddDbContext<DbContext>(o => o.UseNpgsql(connStr));
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
