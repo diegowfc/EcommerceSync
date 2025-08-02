@@ -42,7 +42,9 @@ namespace WebAPI
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
-            builder.Services.AddScoped<IPaymentGatewayClient, FakePaymentGatewayClient>();
+
+            builder.Services.AddSingleton<FakePaymentGatewayClient>();
+            builder.Services.AddScoped<IPaymentGatewayClient>(sp => sp.GetRequiredService<FakePaymentGatewayClient>());
 
             builder.Services.AddAutoMapper(typeof(OrderProfile).Assembly);
 

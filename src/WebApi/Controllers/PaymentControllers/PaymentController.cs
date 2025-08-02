@@ -14,17 +14,23 @@ namespace WebAPI.Controllers.PaymentControllers
         private readonly IPaymentService _service = service;
 
         [HttpPost("process")]
-        public async Task<IActionResult> ProcessPayment([FromBody] PaymentProcessDto dto)
+        public async Task<IActionResult> ProcessPayment(
+            [FromBody] PaymentProcessDto dto, 
+            [FromServices] FakePaymentGatewayClient fakeGateway,
+            [FromQuery] bool simulateDown = false)
         {
-            var result = await _service.ProcessAsync(dto);
-            if (!result.Success)
-                return BadRequest(new { message = result.ErrorMessage });
+            fakeGateway.IsAvailable = !simulateDown;
 
-            return Ok(new
+            try
             {
-                message = "Pagamento aprovado",
-                transactionId = result.TransactionId
-            });
+                var result = await _service.ProcessAsync(dto);
+
+                return Ok(new { message = "Pagamento aprovado!", transactionId = result.TransactionId });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(503, new { message = ex.Message });
+            }
         }
     }
 }
