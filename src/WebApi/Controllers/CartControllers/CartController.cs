@@ -13,7 +13,7 @@ namespace WebAPI.Controllers.CartControllers
     {
         private readonly ICartService _service = service;
 
-        [HttpPost("/items")]
+        [HttpPost("items")]
         public async Task<IActionResult> AddItemToCart([FromBody] CartAddDto cartDto)
         {
             await _service.AddItemToCartAsync(cartDto);

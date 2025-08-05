@@ -32,6 +32,35 @@ class EcommerceUser(HttpUser):
             json={"items": items},
             name="/api/Order"
         )
+    
+    @task(2)
+    def add_to_cart(self):
+        payload = {
+            "userId": random.randint(1, 150),      
+            "productId": random.randint(10010, 60009),
+            "quantity": random.randint(1, 3)
+        }
+        self.client.post(
+            "/api/cart/items",
+            json=payload,
+            name="/api/cart/items"
+        )
+        
+    @task(2)
+    def process_payment(self):
+        payload = {
+            "orderId": random.randint(1, 150),     
+            "paymentMethod": 1,
+            "cardNumber": "4444333322221111",
+            "cardHolder": "Test User",
+            "expiry": "12/25",
+            "cvv": "123"
+        }
+        self.client.post(
+            "/api/Payment/process?simulateDown=false",
+            json=payload,
+            name="/api/Payment/process"
+        )
 
     @task(1)
     def register_user(self):
