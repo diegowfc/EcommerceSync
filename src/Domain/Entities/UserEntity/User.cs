@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Domain.Entities.CartEntity;
+using Domain.Entities.OrderEntity;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -28,5 +30,9 @@ namespace Domain.Entities.UserEntity
 
         [Required]
         public string Email { get; set; }
+
+        public ICollection<Cart> Carts { get; set; } = [];
+        public ICollection<Order> Orders { get; set; } = [];
+
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Domain.Entities.OrderEntity;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -13,8 +14,6 @@ namespace Domain.Entities.PaymentEntity
         [Key]
         public int Id { get; set; }
 
-        public int OrderId { get; set; }
-
         [Column(TypeName = "decimal(18,2)")]
         public float Amount { get; set; }
 
@@ -23,5 +22,10 @@ namespace Domain.Entities.PaymentEntity
         public bool Success { get; set; }
 
         public DateTime CreatedAt { get; set; }
+
+        public int OrderId { get; set; }
+
+        [ForeignKey(nameof(OrderId))]
+        public Order order { get; set; }
     }
 }

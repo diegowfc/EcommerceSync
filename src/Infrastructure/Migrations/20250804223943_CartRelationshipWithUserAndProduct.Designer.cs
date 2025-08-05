@@ -3,6 +3,7 @@ using System;
 using EcommerceSync.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(EcommerceSyncDbContext))]
-    partial class EcommerceSyncDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250804223943_CartRelationshipWithUserAndProduct")]
+    partial class CartRelationshipWithUserAndProduct
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -76,8 +79,6 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("tab_order");
                 });
 
@@ -132,8 +133,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("OrderId");
 
                     b.ToTable("tab_payment");
                 });
@@ -206,17 +205,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Domain.Entities.OrderEntity.Order", b =>
-                {
-                    b.HasOne("Domain.Entities.UserEntity.User", "User")
-                        .WithMany("Orders")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Domain.Entities.OrderItemEntity.OrderItem", b =>
                 {
                     b.HasOne("Domain.Entities.OrderEntity.Order", "Order")
@@ -236,22 +224,9 @@ namespace Infrastructure.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("Domain.Entities.PaymentEntity.Payment", b =>
-                {
-                    b.HasOne("Domain.Entities.OrderEntity.Order", "order")
-                        .WithMany("Payments")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("order");
-                });
-
             modelBuilder.Entity("Domain.Entities.OrderEntity.Order", b =>
                 {
                     b.Navigation("Items");
-
-                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("Domain.Entities.ProductEntity.Product", b =>
@@ -262,8 +237,6 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.UserEntity.User", b =>
                 {
                     b.Navigation("Carts");
-
-                    b.Navigation("Orders");
                 });
 #pragma warning restore 612, 618
         }
