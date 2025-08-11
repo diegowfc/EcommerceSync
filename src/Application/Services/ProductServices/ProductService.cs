@@ -40,7 +40,7 @@ namespace Application.Services.ProductServices
             var productCreatedResponse = new ProductCreatedResponseDTO
             {
                 CorrelationId = correlationId,
-                Message = $"Evento de criação do produto iniciado (ID: {correlationId})"
+                Message = $"Evento de criação do product iniciado (ID: {correlationId})"
             };
 
             return productCreatedResponse;
@@ -52,7 +52,7 @@ namespace Application.Services.ProductServices
             var exists = await _unitOfWork.Products.GetByIdAsync(id);
 
             if (exists is null)
-                throw new Exception($"Produto com ID {id} não encontrado.");
+                throw new Exception($"product com ID {id} não encontrado.");
 
             var correlationId = Guid.NewGuid();
 
@@ -65,7 +65,7 @@ namespace Application.Services.ProductServices
             var productDeletedResponse = new ProductDeletedResponseDTO
             {
                 CorrelationId = correlationId,
-                Message = $"Evento de delete do produto iniciado (ID: {correlationId})"
+                Message = $"Evento de delete do product iniciado (ID: {correlationId})"
             };
 
             return productDeletedResponse;

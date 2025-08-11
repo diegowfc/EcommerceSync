@@ -24,6 +24,9 @@ namespace Infrastructure.Helpers
                 x.AddConsumer<OrderCreatedConsumer>();
                 x.AddConsumer<OrderDeletedConsumer>();
 
+                x.AddConsumer<RegisterUserConsumer>();
+
+
                 x.UsingRabbitMq((context, cfgRabbit) =>
                 {
                     var rabbitHost = cfg["RabbitMq:Host"];
@@ -63,6 +66,14 @@ namespace Infrastructure.Helpers
                     cfgRabbit.ReceiveEndpoint("order-deleted-queue", e =>
                     {
                         e.ConfigureConsumer<OrderDeletedConsumer>(context);
+                        e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+                    });
+
+                    cfgRabbit.ReceiveEndpoint("user-registration-commands", e =>
+                    {
+                        e.PrefetchCount = 64;
+                        e.ConcurrentMessageLimit = 16;
+                        e.ConfigureConsumer<RegisterUserConsumer>(context);
                         e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
                     });
                 });

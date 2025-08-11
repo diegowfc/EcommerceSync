@@ -31,7 +31,7 @@ namespace Application.Consumers
             if (product is null)
             {
                 _logger.LogWarning(
-                    "Produto com ID {ProductId} não encontrado; nada a remover.",
+                    "product com ID {ProductId} não encontrado; nada a remover.",
                     evt.ProductID);
                 return;
             }
@@ -40,7 +40,7 @@ namespace Application.Consumers
             await _unitOfWork.CommitAsync();
 
             _logger.LogInformation(
-                "Produto com ID {ProductId} removido com sucesso do banco.",
+                "product com ID {ProductId} removido com sucesso do banco.",
                 evt.ProductID);
         }
     }

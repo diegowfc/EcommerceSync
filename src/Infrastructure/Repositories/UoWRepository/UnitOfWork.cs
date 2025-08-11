@@ -1,10 +1,12 @@
-﻿using Domain.Interfaces.OrderInterface;
+﻿using Domain.Interfaces.CartInterface;
+using Domain.Interfaces.OrderInterface;
+using Domain.Interfaces.PaymentInterface;
 using Domain.Interfaces.ProductInterface;
 using Domain.Interfaces.UnitOfWork;
+using Domain.Interfaces.UserInterface;
 using EcommerceSync.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
 
-namespace Infrastructure.Repositories.UoWRepository
+namespace Infrastructure.Repositories._unitOfWorkRepository
 {
     public class UnitOfWork : IUnitOfWork
     {
@@ -12,6 +14,9 @@ namespace Infrastructure.Repositories.UoWRepository
 
         public IOrderRepository Orders { get; }
         public IProductRepository Products { get; }
+        public IPaymentRepository Payments { get; }
+        public ICartRepository Carts { get; }
+        public IUserRepository Users { get; }
 
         public UnitOfWork(EcommerceSyncDbContext context, IOrderRepository orderRepository, IProductRepository productRepository)
         {
