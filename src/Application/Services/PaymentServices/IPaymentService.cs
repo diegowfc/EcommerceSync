@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Application.DTOs.PaymentDtos;
 
 namespace Application.Services.PaymentServices
 {
     public interface IPaymentService
     {
+        Task<Guid> ProcessPaymentAsync(PaymentProcessDto dto);
     }
 }

@@ -40,12 +40,12 @@ namespace WebAPI
 
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
-            //builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ICartService, CartService>();
-            //builder.Services.AddScoped<IPaymentService, PaymentService>();
+            builder.Services.AddScoped<IPaymentService, PaymentService>();
 
-            //builder.Services.AddSingleton<FakePaymentGatewayClient>();
-            //builder.Services.AddScoped<IPaymentGatewayClient>(sp => sp.GetRequiredService<FakePaymentGatewayClient>());
+            builder.Services.AddSingleton<FakePaymentGatewayClient>();
+            builder.Services.AddScoped<IFakePaymentGatewayClient>(sp => sp.GetRequiredService<FakePaymentGatewayClient>());
 
             builder.Services.AddMessaging(builder.Configuration);
 

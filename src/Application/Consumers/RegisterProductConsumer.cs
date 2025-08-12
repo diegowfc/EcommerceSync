@@ -6,11 +6,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Consumers
 {
-    public class ProductCreatedConsumer(IUnitOfWork unitOfWork) : IConsumer<ProductCreatedEvent>
+    public class RegisterProductConsumer(IUnitOfWork unitOfWork) : IConsumer<ProductRegistrationCommand>
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
-        public async Task Consume(ConsumeContext<ProductCreatedEvent> context)
+        public async Task Consume(ConsumeContext<ProductRegistrationCommand> context)
         {
             var evt = context.Message;
 

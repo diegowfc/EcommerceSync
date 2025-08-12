@@ -8,34 +8,32 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services.ProductServices
 {
-    public class ProductService : IProductService
+    public class ProductService(
+        ISendEndpointProvider sendEndpointProvider,
+        IPublishEndpoint publishEndpoint,
+        IUnitOfWork unitOfWork,
+        IMapper mapper) : IProductService
     {
 
-        private readonly IPublishEndpoint _publishEndpoint;
-        private readonly IMapper _mapper;
-        private readonly IUnitOfWork _unitOfWork;
-
-        public ProductService(
-            IPublishEndpoint publishEndpoint,
-            IUnitOfWork unitOfWork,
-            IMapper mapper)
-        {
-            _publishEndpoint = publishEndpoint;
-            _unitOfWork = unitOfWork;
-            _mapper = mapper;
-        }
+        private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
+        private readonly ISendEndpointProvider _send = sendEndpointProvider;
+        private readonly IMapper _mapper = mapper;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
         public async Task<ProductCreatedResponseDTO> CreateProductAsync(ProductDTO productDto)
         {
             var correlationId = Guid.NewGuid();
 
-            await _publishEndpoint.Publish(new ProductCreatedEvent
+            var productRegistration = new ProductRegistrationCommand
             {
                 CorrelationId = correlationId,
                 Name = productDto.Name,
                 Price = productDto.Price,
                 Stock = productDto.Stock
-            });
+            };
+
+            var endpoint = await _send.GetSendEndpoint(new Uri("queue:product-registration-commands"));
+            await endpoint.Send(productRegistration);
 
             var productCreatedResponse = new ProductCreatedResponseDTO
             {

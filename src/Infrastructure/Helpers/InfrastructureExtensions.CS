@@ -16,50 +16,50 @@ namespace Infrastructure.Helpers
     {
         public static IServiceCollection AddMessaging(this IServiceCollection services, IConfiguration cfg)
         {
+            var uri = cfg["RabbitMq:Uri"] ?? Environment.GetEnvironmentVariable("CLOUDAMQP_URL");
+
             services.AddMassTransit(x =>
             {
-                x.AddConsumer<ProductCreatedConsumer>();
+                x.AddConsumer<RegisterProductConsumer>();
                 x.AddConsumer<ProductDeletedConsumer>();
 
-                x.AddConsumer<OrderCreatedConsumer>();
+                x.AddConsumer<RegisterOrderConsumer>();
                 x.AddConsumer<OrderDeletedConsumer>();
 
                 x.AddConsumer<RegisterUserConsumer>();
 
+                x.AddConsumer<CartAddConsumer>();
+
+                x.AddConsumer<PaymentProcessConsumer>();
 
                 x.UsingRabbitMq((context, cfgRabbit) =>
                 {
-                    var rabbitHost = cfg["RabbitMq:Host"];
-                    var rabbitUser = cfg["RabbitMq:User"];
-                    var rabbitPass = cfg["RabbitMq:Pass"];
+                    cfgRabbit.Host(new Uri(uri));
 
-                    cfgRabbit.Host(cfg["RabbitMq:Host"], h =>
-                    {
-                        h.Username(rabbitUser);
-                        h.Password(rabbitPass);
-                    });
+                    const ushort prefetch = 24;
+                    const int concurrency = 6;
 
-                    cfgRabbit.ReceiveEndpoint("product-created-queue", e =>
+                    cfgRabbit.ReceiveEndpoint("product-registration-commands", e =>
                     {
-                        e.PrefetchCount = 64;
-                        e.ConcurrentMessageLimit = 16;
-                        e.ConfigureConsumer<ProductCreatedConsumer>(context);
+                        e.PrefetchCount = prefetch;
+                        e.ConcurrentMessageLimit = concurrency;
+                        e.ConfigureConsumer<RegisterProductConsumer>(context);
                         e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
                     });
 
                     cfgRabbit.ReceiveEndpoint("product-deleted-queue", e =>
                     {
-                        e.PrefetchCount = 64;          
-                        e.ConcurrentMessageLimit = 16;
+                        e.PrefetchCount = prefetch;
+                        e.ConcurrentMessageLimit = concurrency;
                         e.ConfigureConsumer<ProductDeletedConsumer>(context);
                         e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
                     });
 
-                    cfgRabbit.ReceiveEndpoint("order-created-queue", e =>
+                    cfgRabbit.ReceiveEndpoint("order-registration-commands", e =>
                     {
-                        e.PrefetchCount = 64;
-                        e.ConcurrentMessageLimit = 16;
-                        e.ConfigureConsumer<OrderCreatedConsumer>(context);
+                        e.PrefetchCount = prefetch;
+                        e.ConcurrentMessageLimit = concurrency;
+                        e.ConfigureConsumer<RegisterOrderConsumer>(context);
                         e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
                     });
 
@@ -71,9 +71,25 @@ namespace Infrastructure.Helpers
 
                     cfgRabbit.ReceiveEndpoint("user-registration-commands", e =>
                     {
-                        e.PrefetchCount = 64;
-                        e.ConcurrentMessageLimit = 16;
+                        e.PrefetchCount = prefetch;
+                        e.ConcurrentMessageLimit = concurrency;
                         e.ConfigureConsumer<RegisterUserConsumer>(context);
+                        e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+                    });
+
+                    cfgRabbit.ReceiveEndpoint("cart-add-commands", e =>
+                    {
+                        e.PrefetchCount = prefetch;
+                        e.ConcurrentMessageLimit = concurrency;
+                        e.ConfigureConsumer<CartAddConsumer>(context);
+                        e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+                    });
+
+                    cfgRabbit.ReceiveEndpoint("payment-processs-commands", e =>
+                    {
+                        e.PrefetchCount = prefetch;
+                        e.ConcurrentMessageLimit = concurrency;
+                        e.ConfigureConsumer<PaymentProcessConsumer>(context);
                         e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
                     });
                 });

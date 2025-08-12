@@ -7,11 +7,11 @@ using MassTransit;
 
 namespace Infrastructure.Consumers
 {
-    public class OrderCreatedConsumer(IUnitOfWork unitOfWork) : IConsumer<OrderCreatedEvent>
+    public class RegisterOrderConsumer(IUnitOfWork unitOfWork) : IConsumer<OrderRegistrationCommand>
     {
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
-        public async Task Consume(ConsumeContext<OrderCreatedEvent> context)
+        public async Task Consume(ConsumeContext<OrderRegistrationCommand> context)
         {
             var evt = context.Message;
 

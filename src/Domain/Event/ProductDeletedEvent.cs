@@ -8,7 +8,7 @@ namespace Domain.Event
 {
     public class ProductDeletedEvent
     {
-        public Guid CorrelationID { get; set; }
-        public int ProductID { get; set; } 
+        public Guid CorrelationID { get; init; }
+        public int ProductID { get; init; }
     }
 }

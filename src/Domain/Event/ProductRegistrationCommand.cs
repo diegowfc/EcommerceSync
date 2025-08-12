@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Domain.Event
 {
-    public record ProductCreatedEvent
+    public record ProductRegistrationCommand
     {
         public Guid CorrelationId { get; init; }     
         public string Name { get; init; }

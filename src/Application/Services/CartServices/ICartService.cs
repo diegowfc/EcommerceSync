@@ -5,6 +5,6 @@ namespace Application.Services.CartServices
 {
     public interface ICartService
     {
-        Task AddItemToCartAsync(CartAddDto cartDto);
+        Task<Guid> AddItemToCartAsync(CartAddDto cartDto);
     }
 }

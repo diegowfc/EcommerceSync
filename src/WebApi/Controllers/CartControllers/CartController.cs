@@ -1,9 +1,5 @@
 ﻿using Application.DTOs.CartDtos;
 using Application.Services.CartServices;
-using Application.Services.UserServices;
-using Domain.Entities.UserEntity;
-using Microsoft.AspNetCore.Cors.Infrastructure;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebAPI.Controllers.CartControllers
@@ -17,8 +13,12 @@ namespace WebAPI.Controllers.CartControllers
         [HttpPost("items")]
         public async Task<IActionResult> AddItemToCart([FromBody] CartAddDto cartDto)
         {
-            await _service.AddItemToCartAsync(cartDto);
-            return Ok(new { message = "Item adicionado ao carrinho" });
+            var correlationId = await _service.AddItemToCartAsync(cartDto);
+            return Accepted(new
+            {
+                message = "Adicionar item ao carrinho enviado para consumo.",
+                correlationId
+            });
         }
     }
 }

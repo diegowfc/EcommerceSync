@@ -6,8 +6,10 @@ using MassTransit;
 
 namespace Application.Consumers
 {
-    public class RegisterUserConsumer(IUnitOfWork _unitOfWork, IMapper mapper) : IConsumer<UserRegisterCommand>
+    public class RegisterUserConsumer(IUnitOfWork unitOfWork) : IConsumer<UserRegisterCommand>
     {
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
+
         public async Task Consume(ConsumeContext<UserRegisterCommand> context)
         {
             var evt = context.Message;
@@ -21,7 +23,6 @@ namespace Application.Consumers
 
             await _unitOfWork.Users.AddAsync(user);
             await _unitOfWork.CommitAsync();
- 
         }
     }
 }

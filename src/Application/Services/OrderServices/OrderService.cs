@@ -10,21 +10,16 @@ using MassTransit;
 
 namespace Application.Services.OrderServices
 {
-    public class OrderService : IOrderService
+    public class OrderService(
+        ISendEndpointProvider sendEndpointProvider,
+        IPublishEndpoint publishEndpoint,
+        IUnitOfWork unitOfWork,
+        IMapper mapper) : IOrderService
     {
-        private readonly IPublishEndpoint _publishEndpoint;
-        private readonly IMapper _mapper;
-        private readonly IUnitOfWork _unitOfWork;
-
-        public OrderService(
-            IPublishEndpoint publishEndpoint,
-            IUnitOfWork unitOfWork,
-            IMapper mapper)
-        {
-            _publishEndpoint = publishEndpoint;
-            _unitOfWork = unitOfWork;
-            _mapper = mapper;
-        }
+        private readonly ISendEndpointProvider _send = sendEndpointProvider;
+        private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
+        private readonly IMapper _mapper = mapper;
+        private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
         public async Task<OrderCreatedResponseDTO> CreateOrderAsync(OrderDTO orderDTO)
         {
@@ -44,7 +39,7 @@ namespace Application.Services.OrderServices
                 Quantity = i.Quantity
             }).ToList();
 
-            await _publishEndpoint.Publish(new OrderCreatedEvent
+            var orderRegister = new OrderRegistrationCommand
             {
                 CorrelationId = correlationId,
                 DateOfOrder = dateOfOrder,
@@ -52,7 +47,10 @@ namespace Application.Services.OrderServices
                 UserId = userId,
                 Status = status,
                 Items = itemsForEvent
-            });
+            };
+
+            var endpoint = await _send.GetSendEndpoint(new Uri("queue:order-registration-commands"));
+            await endpoint.Send(orderRegister);
 
             var orderCreatedResponse = new OrderCreatedResponseDTO
             {

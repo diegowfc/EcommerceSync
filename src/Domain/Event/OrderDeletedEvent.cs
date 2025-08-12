@@ -8,7 +8,7 @@ namespace Domain.Event
 {
     public class OrderDeletedEvent
     {
-        public Guid CorrelationID { get; set; }
-        public int OrderId { get; set; }
+        public Guid CorrelationID { get; init; }
+        public int OrderId { get; init; }
     }
 }

@@ -18,11 +18,20 @@ namespace Infrastructure.Repositories._unitOfWorkRepository
         public ICartRepository Carts { get; }
         public IUserRepository Users { get; }
 
-        public UnitOfWork(EcommerceSyncDbContext context, IOrderRepository orderRepository, IProductRepository productRepository)
+        public UnitOfWork(
+            EcommerceSyncDbContext context, 
+            IOrderRepository orderRepository, 
+            IProductRepository productRepository, 
+            IUserRepository userRepository,
+            IPaymentRepository paymentRepository,
+            ICartRepository cartRepository)
         {
             _context = context;
             Orders = orderRepository;
             Products = productRepository;
+            Users = userRepository;
+            Carts = cartRepository;
+            Payments = paymentRepository;
         }
 
         public async Task<int> CommitAsync()
