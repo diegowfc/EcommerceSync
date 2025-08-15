@@ -77,6 +77,12 @@ namespace WebAPI
                 app.UseSwaggerUI();
             }
 
+            if (app.Configuration.GetValue<bool>("ENABLE_SWAGGER"))
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
+
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
