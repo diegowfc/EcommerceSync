@@ -4,17 +4,19 @@ using AutoMapper;
 using Domain.Entities.PaymentEntity;
 using Domain.Enums.OrderStatus;
 using Domain.Event;
+using Domain.Interfaces.EndpointCache;
 using Domain.Interfaces.UnitOfWork;
 using MassTransit;
 
 namespace Application.Services.PaymentServices
 {
     public class PaymentService(
-        IUnitOfWork unitOfWork, 
-        ISendEndpointProvider sendEndpointProvider): IPaymentService
+        IUnitOfWork unitOfWork,
+        IEndpointCache endpointCache) : IPaymentService
     {
+        private static readonly string QueuePaymentProcess = "payment-processs-commands";
+        private readonly Task<ISendEndpoint> _paymentProcessEndpoint = endpointCache.ForQueue(QueuePaymentProcess);
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
-        private readonly ISendEndpointProvider _send = sendEndpointProvider;
 
         public async Task<Guid> ProcessPaymentAsync(PaymentProcessDto paymentDto)
         {
@@ -31,11 +33,10 @@ namespace Application.Services.PaymentServices
                 Expiry = paymentDto.Expiry
             };
 
-            var endpoint = await _send.GetSendEndpoint(new Uri("queue:payment-processs-commands"));
-            await endpoint.Send(paymentProcess);
+            var endpoint = await _paymentProcessEndpoint.ConfigureAwait(false);
+            await endpoint.Send(paymentProcess).ConfigureAwait(false);
 
             return correlationId;
-
         }
     }
 }

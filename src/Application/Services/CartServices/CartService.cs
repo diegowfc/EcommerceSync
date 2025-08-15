@@ -2,19 +2,16 @@
 using AutoMapper;
 using Domain.Entities.CartEntity;
 using Domain.Event;
+using Domain.Interfaces.EndpointCache;
 using Domain.Interfaces.UnitOfWork;
 using MassTransit;
 
 namespace Application.Services.CartServices
 {
-    public class CartService(
-        IUnitOfWork unitOfWork, 
-        IMapper mapper,
-        ISendEndpointProvider sendEndpointProvider) : ICartService
+    public class CartService(IEndpointCache endpointCache) : ICartService
     {
-        private readonly IUnitOfWork _unitOfWork = unitOfWork;
-        private readonly IMapper _mapper = mapper;
-        private readonly ISendEndpointProvider _send = sendEndpointProvider;
+        private static readonly string QueueCartAdd = "queue:cart-add-commands";
+        private readonly Task<ISendEndpoint> _cartAddEndpoint = endpointCache.ForQueue(QueueCartAdd);
 
         public async Task<Guid> AddItemToCartAsync(CartAddDto cartDto)
         {
@@ -28,8 +25,8 @@ namespace Application.Services.CartServices
                 Quantity = cartDto.Quantity
             };
 
-            var endpoint = await _send.GetSendEndpoint(new Uri("queue:cart-add-commands"));
-            await endpoint.Send(cartAdd);
+            var endpoint = await _cartAddEndpoint.ConfigureAwait(false);
+            await endpoint.Send(cartAdd).ConfigureAwait(false);
 
             return correlationId;
         }

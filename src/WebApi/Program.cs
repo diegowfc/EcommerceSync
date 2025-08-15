@@ -19,6 +19,7 @@ using Infrastructure.Repositories.ProductRepository;
 using Infrastructure.Repositories._unitOfWorkRepository;
 using Infrastructure.Repositories.UserRepository;
 using Microsoft.EntityFrameworkCore;
+using Domain.Interfaces.EndpointCache;
 
 namespace WebAPI
 {
@@ -44,8 +45,10 @@ namespace WebAPI
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
 
-            builder.Services.AddSingleton<FakePaymentGatewayClient>();
             builder.Services.AddScoped<IFakePaymentGatewayClient>(sp => sp.GetRequiredService<FakePaymentGatewayClient>());
+
+            builder.Services.AddSingleton<FakePaymentGatewayClient>();
+            builder.Services.AddSingleton<IEndpointCache, EndpointCache>();
 
             builder.Services.AddMessaging(builder.Configuration);
 

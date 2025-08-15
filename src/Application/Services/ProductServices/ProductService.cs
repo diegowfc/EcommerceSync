@@ -14,7 +14,8 @@ namespace Application.Services.ProductServices
         IUnitOfWork unitOfWork,
         IMapper mapper) : IProductService
     {
-
+        private static readonly Uri ProductRegistrationUri = new("queue:product-registration-commands");
+        private readonly Task<ISendEndpoint> _productRegistrationEndpoint = sendEndpointProvider.GetSendEndpoint(ProductRegistrationUri);
         private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
         private readonly ISendEndpointProvider _send = sendEndpointProvider;
         private readonly IMapper _mapper = mapper;
@@ -32,18 +33,15 @@ namespace Application.Services.ProductServices
                 Stock = productDto.Stock
             };
 
-            var endpoint = await _send.GetSendEndpoint(new Uri("queue:product-registration-commands"));
+            var endpoint = await _productRegistrationEndpoint;
             await endpoint.Send(productRegistration);
 
-            var productCreatedResponse = new ProductCreatedResponseDTO
+            return new ProductCreatedResponseDTO
             {
                 CorrelationId = correlationId,
                 Message = $"Evento de criação do product iniciado (ID: {correlationId})"
             };
-
-            return productCreatedResponse;
         }
-
 
         public async Task<ProductDeletedResponseDTO> DeleteProductAsync(int id)
         {

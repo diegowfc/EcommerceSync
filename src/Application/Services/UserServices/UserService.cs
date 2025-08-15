@@ -3,6 +3,7 @@ using Application.DTOs.UserDtos;
 using AutoMapper;
 using Domain.Entities.UserEntity;
 using Domain.Event;
+using Domain.Interfaces.EndpointCache;
 using Domain.Interfaces.UnitOfWork;
 using MassTransit;
 using MassTransit.Transports;
@@ -11,11 +12,13 @@ using System.Security.Cryptography;
 namespace Application.Services.UserServices
 {
     public class UserService(
-        ISendEndpointProvider sendEndpointProvider,
+        IEndpointCache endpointCache,
         IUnitOfWork unitOfWork,
         IMapper mapper) : IUserService
     {
-        private readonly ISendEndpointProvider _send = sendEndpointProvider;
+
+        private static readonly string QueueUserRegistration = "user-registration-commands";
+        private readonly Task<ISendEndpoint> _userRegistrationEndpoint = endpointCache.ForQueue(QueueUserRegistration);
         private readonly IMapper _mapper = mapper;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
@@ -40,15 +43,16 @@ namespace Application.Services.UserServices
                 PasswordHash = $"{Convert.ToBase64String(salt)}:{Convert.ToBase64String(hash)}"
             };
 
-            var endpoint = await _send.GetSendEndpoint(new Uri("queue:user-registration-commands"));
-            await endpoint.Send(userRegister);
+            var endpoint = await _userRegistrationEndpoint.ConfigureAwait(false);
+            await endpoint.Send(userRegister).ConfigureAwait(false);
 
             return correlationId;
         }
 
-        private static byte[] HashPassword(string password, byte[] salt,
-                                          int iterations = 10000,
-                                          int hashSize = 32)
+        private static byte[] HashPassword(
+            string password, byte[] salt,
+            int iterations = 10000,
+            int hashSize = 32)
         {
             using var pbkdf2 = new Rfc2898DeriveBytes(
                 password,

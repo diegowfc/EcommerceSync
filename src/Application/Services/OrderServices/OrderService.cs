@@ -5,18 +5,20 @@ using Domain.Entities.OrderEntity;
 using Domain.Entities.OrderItemEntity;
 using Domain.Enums.OrderStatus;
 using Domain.Event;
+using Domain.Interfaces.EndpointCache;
 using Domain.Interfaces.UnitOfWork;
 using MassTransit;
 
 namespace Application.Services.OrderServices
 {
     public class OrderService(
-        ISendEndpointProvider sendEndpointProvider,
+        IEndpointCache endpointCache,
         IPublishEndpoint publishEndpoint,
         IUnitOfWork unitOfWork,
         IMapper mapper) : IOrderService
     {
-        private readonly ISendEndpointProvider _send = sendEndpointProvider;
+        private static readonly string QueueOrderRegistration = "order-registration-commands";
+        private readonly Task<ISendEndpoint> _orderRegistrationEndpoint = endpointCache.ForQueue(QueueOrderRegistration);
         private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
         private readonly IMapper _mapper = mapper;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
@@ -49,16 +51,14 @@ namespace Application.Services.OrderServices
                 Items = itemsForEvent
             };
 
-            var endpoint = await _send.GetSendEndpoint(new Uri("queue:order-registration-commands"));
-            await endpoint.Send(orderRegister);
+            var endpoint = await _orderRegistrationEndpoint.ConfigureAwait(false);
+            await endpoint.Send(orderRegister).ConfigureAwait(false);
 
-            var orderCreatedResponse = new OrderCreatedResponseDTO
+            return new OrderCreatedResponseDTO
             {
                 CorrelationId = correlationId,
                 Message = $"Evento de criação do pedido iniciado (ID: {correlationId})"
             };
-
-            return orderCreatedResponse;
 
         }
 
