@@ -36,8 +36,8 @@ namespace Infrastructure.Helpers
                 {
                     cfgRabbit.Host(new Uri(uri));
 
-                    const ushort prefetch = 24;
-                    const int concurrency = 6;
+                    const ushort prefetch = 128;
+                    const int concurrency = 16;
 
                     cfgRabbit.ReceiveEndpoint("product-registration-commands", e =>
                     {
@@ -45,6 +45,7 @@ namespace Infrastructure.Helpers
                         e.ConcurrentMessageLimit = concurrency;
                         e.ConfigureConsumer<RegisterProductConsumer>(context);
                         e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+                        e.UseInMemoryOutbox();
                     });
 
                     cfgRabbit.ReceiveEndpoint("product-deleted-queue", e =>
@@ -53,6 +54,7 @@ namespace Infrastructure.Helpers
                         e.ConcurrentMessageLimit = concurrency;
                         e.ConfigureConsumer<ProductDeletedConsumer>(context);
                         e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+                        e.UseInMemoryOutbox();
                     });
 
                     cfgRabbit.ReceiveEndpoint("order-registration-commands", e =>
@@ -61,12 +63,14 @@ namespace Infrastructure.Helpers
                         e.ConcurrentMessageLimit = concurrency;
                         e.ConfigureConsumer<RegisterOrderConsumer>(context);
                         e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+                        e.UseInMemoryOutbox();
                     });
 
                     cfgRabbit.ReceiveEndpoint("order-deleted-queue", e =>
                     {
                         e.ConfigureConsumer<OrderDeletedConsumer>(context);
                         e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+                        e.UseInMemoryOutbox();
                     });
 
                     cfgRabbit.ReceiveEndpoint("user-registration-commands", e =>
@@ -75,6 +79,7 @@ namespace Infrastructure.Helpers
                         e.ConcurrentMessageLimit = concurrency;
                         e.ConfigureConsumer<RegisterUserConsumer>(context);
                         e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+                        e.UseInMemoryOutbox();
                     });
 
                     cfgRabbit.ReceiveEndpoint("cart-add-commands", e =>
@@ -84,6 +89,7 @@ namespace Infrastructure.Helpers
                         e.ConfigureConsumer<CartAddConsumer>(context);
                         e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
                         e.Bind("queue:cart-add-commands");
+                        e.UseInMemoryOutbox();
                     });
 
                     cfgRabbit.ReceiveEndpoint("payment-processs-commands", e =>
@@ -92,6 +98,7 @@ namespace Infrastructure.Helpers
                         e.ConcurrentMessageLimit = concurrency;
                         e.ConfigureConsumer<PaymentProcessConsumer>(context);
                         e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+                        e.UseInMemoryOutbox();
                     });
                 });
             });

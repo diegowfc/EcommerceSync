@@ -1,4 +1,5 @@
 ﻿using Domain.Entities.OrderEntity;
+using Domain.Entities.ProductEntity;
 using Domain.Enums.OrderStatus;
 using Domain.Interfaces.OrderInterface;
 using EcommerceSync.Infrastructure.Data;
@@ -18,5 +19,17 @@ namespace Infrastructure.Repositories.OrderRepository
             return await _dbSet.Where(order => order.Status == status).ToListAsync();
         }
 
+        public IQueryable<Order> Query()
+        {
+            return _dbSet;
+        }
+
+        public new void Attach(Order entity) => base.Attach(entity);
+
+        public void MarkStatusModified(Order entity)
+        {
+            Attach(entity);
+            _context.Entry(entity).Property(o => o.Status).IsModified = true;
+        }
     }
 }

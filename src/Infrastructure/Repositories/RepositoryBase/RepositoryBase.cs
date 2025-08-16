@@ -50,5 +50,12 @@ namespace Infrastructure.Repositories.RepositoryBase
         {
             _dbSet.Update(entity);
         }
+
+        public virtual void Attach(T entity) => _dbSet.Attach(entity);
+
+        protected void SetPropertyModified<TProp>(T entity, Expression<Func<T, TProp>> prop)
+        {
+            _context.Entry(entity).Property(prop).IsModified = true;
+        }
     }
 }
