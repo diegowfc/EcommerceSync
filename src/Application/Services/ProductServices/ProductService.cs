@@ -36,36 +36,34 @@ namespace Application.Services.ProductServices
             await _unitOfWork.CommitAsync();
         }
 
-        public async Task<PagedProductsDTO<ProductDTO>> GetProductsAsync(
-            int page,
-            int pageSize,
-            CancellationToken cancellationToken = default)
+        public async Task<CursorPage<ProductDTO>> GetProductsAsync(int? afterId, int pageSize, CancellationToken cancellationToken = default)
         {
-            page = Math.Max(page, 1);
             pageSize = Math.Clamp(pageSize, 1, 100);
 
-            var query = _unitOfWork.Products
-                  .Query()
-                  .OrderBy(p => p.Id);
+            var items = await _unitOfWork.Products.Query()
+                .AsNoTracking()
+                .Where(p => afterId == null || p.Id > afterId)
+                .OrderBy(p => p.Id)
+                .Take(pageSize + 1)
+                .Select(p => new ProductDTO
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Price = p.Price,
+                    Stock = p.Stock
+                })
+                .ToListAsync(cancellationToken);
 
-            var total = await query.CountAsync(cancellationToken);
-            var items = await query
-               .Skip((page - 1) * pageSize)
-               .Take(pageSize)
-               .Select(p => new ProductDTO
-               {
-                   Name = p.Name,
-                   Price = p.Price,
-                   Stock = p.Stock
-               })
-               .ToListAsync(cancellationToken);
+            var hasMore = items.Count > pageSize;
+            if (hasMore) items.RemoveAt(items.Count - 1);
 
-            return new PagedProductsDTO<ProductDTO>
+            var nextAfter = items.Count > 0 ? items[^1].Id : (int?)null;
+
+            return new CursorPage<ProductDTO>
             {
                 Items = items,
-                TotalCount = total,
-                Page = page,
-                PageSize = pageSize
+                NextAfter = nextAfter,
+                HasMore = hasMore
             };
         }
 

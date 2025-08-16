@@ -22,54 +22,60 @@ namespace Application.Services.OrderServices
 
         public async Task<int> CreateOrderAsync(OrderDTO dto)
         {
-            if (dto.Items == null || !dto.Items.Any())
-                throw new Exception("O pedido deve conter ao menos um item.");
+            if (dto.Items is null || !dto.Items.Any())
+                throw new ArgumentException("O pedido deve conter ao menos um item.");
 
-            var order = _mapper.Map<Order>(dto);
-            order.DateOfOrder = DateTime.UtcNow;
-            order.Status = OrderStatus.Pending;
-            order.OrderIdentifier = GenerateOrderIdentifier(order.DateOfOrder);
-            order.UserId = GenerateUserIdForTest();
+            var now = DateTime.UtcNow;
 
-            var productIds = order.Items
-                                  .Select(i => i.ProductId)
-                                  .Distinct()
-                                  .ToList();
+            var productIds = dto.Items.Select(i => i.ProductId).Distinct().ToArray();
 
-            var orderProducts = await _unitOfWork.Products
-                .Query()
+            // Catálogo com preço (e o que mais precisar), SEM rastreamento
+            var catalog = await _unitOfWork.Products.Query()
+                .AsNoTracking()
                 .Where(p => productIds.Contains(p.Id))
-                .ToListAsync();
+                .Select(p => new { p.Id, p.Price })
+                .ToDictionaryAsync(p => p.Id);
 
-            var produtosPorId = orderProducts.ToDictionary(p => p.Id);
+            var faltantes = productIds.Except(catalog.Keys).ToArray();
+            if (faltantes.Length > 0)
+                throw new InvalidOperationException($"Produtos inexistentes: {string.Join(",", faltantes)}");
 
-            foreach (var item in order.Items)
+            var qtyByProduct = dto.Items
+                .GroupBy(i => i.ProductId)
+                .ToDictionary(g => g.Key, g => g.Sum(x => x.Quantity));
+
+            foreach (var (productId, qty) in qtyByProduct)
             {
-                var produto = produtosPorId[item.ProductId];
-                if (produto.Stock < item.Quantity)
-                    throw new Exception($"Estoque insuficiente para o produto {produto.Id}");
+                var affected = await _unitOfWork.Products.Query()
+                    .Where(p => p.Id == productId && p.Stock >= qty)
+                    .ExecuteUpdateAsync(set => set
+                        .SetProperty(p => p.Stock, p => p.Stock - qty));
+
+                if (affected == 0)
+                    throw new InvalidOperationException($"Estoque insuficiente para o produto {productId}.");
             }
 
-            float total = 0f;
-            var orderItemsRefatorados = new List<OrderItem>();
-            foreach (var item in order.Items)
+            var items = dto.Items.Select(i => new OrderItem
             {
-                var produto = produtosPorId[item.ProductId];
-                total += produto.Price * item.Quantity;
+                ProductId = i.ProductId,
+                Quantity = i.Quantity
+            }).ToList();
 
-                var orderItem = _mapper.Map<OrderItem>(item);
-                orderItem.Product = produto;
+            decimal total = dto.Items.Sum(i => (decimal)catalog[i.ProductId].Price * i.Quantity);
 
-                produto.Stock -= item.Quantity;
-
-                orderItemsRefatorados.Add(orderItem);
-            }
-
-            order.Total = total;
-            order.Items = orderItemsRefatorados;
+            var order = new Order
+            {
+                DateOfOrder = now,
+                Status = OrderStatus.Pending,
+                OrderIdentifier = GenerateOrderIdentifier(now),
+                UserId = GenerateUserIdForTest(),
+                Items = items,
+                Total = (float)total
+            };
 
             await _unitOfWork.Orders.AddAsync(order);
             await _unitOfWork.CommitAsync();
+
 
             return order.Id;
         }

@@ -1,4 +1,5 @@
-﻿using Application.DTOs.ProductDtos;
+﻿using Application.DTOs.PagedResultsDTO;
+using Application.DTOs.ProductDtos;
 using Application.Services.ProductServices;
 using Domain.Interfaces.ProductInterface;
 using Microsoft.AspNetCore.Mvc;
@@ -19,9 +20,19 @@ namespace WebAPI.Controllers.ProductControllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllProducts(int page = 1, int pageSize = 36, CancellationToken cancellationToken = default)
+        [ProducesResponseType(typeof(CursorPage<ProductDTO>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAllProducts([FromQuery] int? afterId = null, [FromQuery] int pageSize = 36, CancellationToken cancellationToken = default)
         {
-            return Ok(await _service.GetProductsAsync(page, pageSize, cancellationToken));
+            var result = await _service.GetProductsAsync(afterId, pageSize, cancellationToken);
+
+            if (result.HasMore && result.NextAfter.HasValue)
+            {
+                var nextUrl = Url.ActionLink(nameof(GetAllProducts), values: new { afterId = result.NextAfter, pageSize });
+                Response.Headers.Append("Link", $"<{nextUrl}>; rel=\"next\"");
+                Response.Headers.Append("X-Next-After", result.NextAfter.Value.ToString());
+            }
+
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
