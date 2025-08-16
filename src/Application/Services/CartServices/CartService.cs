@@ -11,7 +11,7 @@ namespace Application.Services.CartServices
     public class CartService(IEndpointCache endpointCache) : ICartService
     {
         private static readonly string QueueCartAdd = "cart-add-commands";
-        private readonly Task<ISendEndpoint> _cartAddEndpoint = endpointCache.ForQueue(QueueCartAdd);
+        private readonly Task<ISendEndpoint> _cartAddEndpoint = endpointCache.ForExchange(QueueCartAdd);
 
         public async Task<Guid> AddItemToCartAsync(CartAddDto cartDto)
         {
