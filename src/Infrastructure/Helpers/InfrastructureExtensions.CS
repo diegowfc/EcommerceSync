@@ -83,6 +83,7 @@ namespace Infrastructure.Helpers
                         e.ConcurrentMessageLimit = concurrency;
                         e.ConfigureConsumer<CartAddConsumer>(context);
                         e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+                        e.Bind("queue:cart-add-commands");
                     });
 
                     cfgRabbit.ReceiveEndpoint("payment-processs-commands", e =>

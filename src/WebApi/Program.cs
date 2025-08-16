@@ -45,6 +45,8 @@ namespace WebAPI
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
 
+            builder.Services.AddMemoryCache();
+
             builder.Services.AddScoped<IFakePaymentGatewayClient>(sp => sp.GetRequiredService<FakePaymentGatewayClient>());
 
             builder.Services.AddSingleton<FakePaymentGatewayClient>();

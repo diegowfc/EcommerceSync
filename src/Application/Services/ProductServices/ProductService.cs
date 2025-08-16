@@ -4,6 +4,7 @@ using AutoMapper;
 using Domain.Event;
 using Domain.Interfaces.UnitOfWork;
 using MassTransit;
+using MassTransit.Saga;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -19,10 +20,10 @@ namespace Application.Services.ProductServices
         private static readonly Uri ProductRegistrationUri = new("queue:product-registration-commands");
         private readonly Task<ISendEndpoint> _productRegistrationEndpoint = sendEndpointProvider.GetSendEndpoint(ProductRegistrationUri);
         private readonly IPublishEndpoint _publishEndpoint = publishEndpoint;
+        private readonly ISendEndpointProvider _send = sendEndpointProvider;
         private readonly IMapper _mapper = mapper;
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IMemoryCache _cache = cache;
-
 
         public async Task<ProductCreatedResponseDTO> CreateProductAsync(ProductDTO productDto)
         {
@@ -75,25 +76,26 @@ namespace Application.Services.ProductServices
             page = Math.Max(page, 1);
             pageSize = Math.Clamp(pageSize, 1, 100);
 
-            var dataQuery = _unitOfWork.Products
-                .Query()
-                .OrderBy(p => p.Id)
-                .Select(p => new ProductDTO { Name = p.Name, Price = p.Price, Stock = p.Stock });
+            var query = _unitOfWork.Products
+                  .Query()
+                  .AsNoTracking()              
+                  .OrderBy(p => p.Id)
+                  .Select(p => new ProductDTO { Name = p.Name, Price = p.Price, Stock = p.Stock });
 
             var total = await _cache.GetOrCreateAsync("products:total", async e =>
             {
                 e.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(10);
                 return await _unitOfWork.Products
                     .Query()
+                    .AsNoTracking()
                     .CountAsync(cancellationToken);
             });
 
             var cacheKey = $"products:page:{page}:{pageSize}";
-
             var items = await _cache.GetOrCreateAsync(cacheKey, async e =>
             {
                 e.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(10);
-                return await dataQuery
+                return await query
                     .Skip((page - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync(cancellationToken);
