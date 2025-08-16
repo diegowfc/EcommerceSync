@@ -37,7 +37,7 @@ namespace Infrastructure.Helpers
                     cfgRabbit.Host(new Uri(uri));
 
                     const ushort prefetch = 128;
-                    const int concurrency = 16;
+                    const int concurrency = 32;
 
                     cfgRabbit.ReceiveEndpoint("product-registration-commands", e =>
                     {
