@@ -3,7 +3,7 @@ import random
 import string
 
 class EcommerceUser(HttpUser):
-    host = "https://localhost:7064"
+    host = "http://127.0.0.1:8080"
     wait_time = between(1, 3)
     total_pages = 1389
 
