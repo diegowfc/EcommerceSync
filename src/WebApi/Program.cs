@@ -1,4 +1,4 @@
-using Application.Mappings.OrderMapping;
+﻿using Application.Mappings.OrderMapping;
 using Application.Services.CartServices;
 using Application.Services.OrderServices;
 using Application.Services.PaymentServices;
@@ -29,9 +29,6 @@ namespace WebAPI
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddDbContext<EcommerceSyncDbContext>(options =>
-                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -46,44 +43,30 @@ namespace WebAPI
             builder.Services.AddScoped<IPaymentService, PaymentService>();
 
             builder.Services.AddScoped<IFakePaymentGatewayClient>(sp => sp.GetRequiredService<FakePaymentGatewayClient>());
-
             builder.Services.AddSingleton<FakePaymentGatewayClient>();
             builder.Services.AddSingleton<IEndpointCache, EndpointCache>();
 
             builder.Services.AddMessaging(builder.Configuration);
-
             builder.Services.AddAutoMapper(typeof(OrderProfile).Assembly);
-
             builder.Services.AddControllers();
-
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            var host = builder.Configuration["ConnectionStrings:DefaultConnection:Host"];
-            //var port = builder.Configuration["ConnectionStrings:DefaultConnection:Port"];
-            var db = builder.Configuration["ConnectionStrings:DefaultConnection:Database"];
-            var user = builder.Configuration["ConnectionStrings:DefaultConnection:Username"];
-            var pwd = builder.Configuration["ConnectionStrings:DefaultConnection:Password"];
-            //var connStr = $"Host={host};Port={port};Database={db};Username={user};Password={pwd};"; //LOCAL
-            var connStr = $"Host={host};Database={db};Username={user};Password={pwd};SSL Mode=Require;Trust Server Certificate=true"; //SUPABASE
-            builder.Services.AddDbContext<DbContext>(o => o.UseNpgsql(connStr));
+            var connStr = builder.Configuration.GetConnectionString("DefaultConnection")
+                          ?? builder.Configuration["ConnectionStrings:DefaultConnection"]
+                          ?? throw new InvalidOperationException("Connection string 'DefaultConnection' não encontrada.");
+
+            builder.Services.AddDbContextPool<EcommerceSyncDbContext>(opt =>
+                opt.UseNpgsql(connStr, npg =>
+                    npg.EnableRetryOnFailure(5, TimeSpan.FromSeconds(2), null)));
 
             var app = builder.Build();
 
             app.UseSwagger();
             app.UseSwaggerUI();
 
-
-            if (app.Configuration.GetValue<bool>("ENABLE_SWAGGER"))
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
-
             app.MapControllers();
 
             app.Run();

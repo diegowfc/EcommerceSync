@@ -10,7 +10,6 @@ class EcommerceUser(HttpUser):
     def on_start(self):
         self.client.verify = False
         self.after_id = None
-        self._seed_cursor(max_hops=20)
         
     @task(3)
     def list_products(self):
