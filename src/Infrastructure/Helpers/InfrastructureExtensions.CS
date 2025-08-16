@@ -32,6 +32,7 @@ namespace Infrastructure.Helpers
 
                 x.AddConsumer<PaymentProcessConsumer>();
 
+
                 x.UsingRabbitMq((context, cfgRabbit) =>
                 {
                     cfgRabbit.Host(new Uri(uri));
@@ -97,8 +98,26 @@ namespace Infrastructure.Helpers
                         e.PrefetchCount = prefetch;
                         e.ConcurrentMessageLimit = concurrency;
                         e.ConfigureConsumer<PaymentProcessConsumer>(context);
-                        e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+                        e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromMilliseconds(200)));
                         e.UseInMemoryOutbox();
+                        e.UseCircuitBreaker(cb =>
+                        {
+                            cb.ActiveThreshold = 20;     
+                            cb.TrackingPeriod = TimeSpan.FromSeconds(30);
+                            cb.TripThreshold = 50;       
+                            cb.ResetInterval = TimeSpan.FromSeconds(30);
+                        });
+                    });
+
+                    cfgRabbit.ReceiveEndpoint("payment-processs-commands_error", e =>
+                    {
+                        e.ConfigureConsumeTopology = false;
+                        e.PrefetchCount = prefetch;
+                        e.Handler<PaymentProcessComand>(async ctx =>
+                        {
+                            var send = await ctx.GetSendEndpoint(new Uri("queue:payment-processs-commands"));
+                            await send.Send(ctx.Message);
+                        });
                     });
                 });
             });

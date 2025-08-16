@@ -11,18 +11,11 @@ namespace Application.Services.PaymentServices
     {
         public bool IsAvailable { get; set; } = true;
 
-        public Task<GatewayResultDto> ProcessPaymentAsync()
+        public async Task<GatewayResultDto> ProcessPaymentAsync(CancellationToken ct = default)
         {
-            if (!IsAvailable)
-                throw new InvalidOperationException("Gateway fora do ar.");
-
-            Thread.Sleep(500);
-
-            return Task.FromResult(new GatewayResultDto
-            {
-                Success = true,
-                TransactionId = Guid.NewGuid().ToString()
-            });
+            if (!IsAvailable) throw new HttpRequestException("Gateway offline");
+            await Task.Delay(500, ct);
+            return new GatewayResultDto { Success = true, TransactionId = Guid.NewGuid().ToString() };
         }
     }
 }

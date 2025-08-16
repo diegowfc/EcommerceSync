@@ -32,7 +32,7 @@ namespace Application.Consumers
 
             if (order is null) return;
 
-            var result = await gateway.ProcessPaymentAsync();
+            var result = await gateway.ProcessPaymentAsync(context.CancellationToken);
 
             var newStatus = result.Success ? OrderStatus.Paid : OrderStatus.Failed;
 
