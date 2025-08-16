@@ -11,22 +11,6 @@ class EcommerceUser(HttpUser):
         self.client.verify = False
         self.after_id = None
         self._seed_cursor(max_hops=20)
-
-    def _seed_cursor(self, max_hops=20):
-        hops = random.randint(0, max_hops)
-        after = None
-        for _ in range(hops):
-            params = {"pageSize": self.page_size}
-            if after is not None:
-                params["afterId"] = after
-            r = self.client.get("/api/Product", params=params, name="/api/Product (seed)")
-            if r.status_code != 200:
-                break
-            data = r.json()
-            after = data.get("nextAfter")
-            if not data.get("hasMore") or after is None:
-                break
-        self.after_id = after
         
     @task(3)
     def list_products(self):
