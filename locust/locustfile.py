@@ -9,16 +9,48 @@ class EcommerceUser(HttpUser):
 
     def on_start(self):
         self.client.verify = False
+        self.after_id = None
+        self._seed_cursor(max_hops=20)
 
+    def _seed_cursor(self, max_hops=20):
+        hops = random.randint(0, max_hops)
+        after = None
+        for _ in range(hops):
+            params = {"pageSize": self.page_size}
+            if after is not None:
+                params["afterId"] = after
+            r = self.client.get("/api/Product", params=params, name="/api/Product (seed)")
+            if r.status_code != 200:
+                break
+            data = r.json()
+            after = data.get("nextAfter")
+            if not data.get("hasMore") or after is None:
+                break
+        self.after_id = after
+        
     @task(3)
     def list_products(self):
-        page = random.randint(1, self.total_pages)
-        page_size = 36
-        self.client.get(
-            "/api/Product",
-            params={"page": page, "pageSize": page_size},
-            name="/api/Product"
-        )
+        params = {"pageSize": self.page_size}
+        if self.after_id is not None:
+            params["afterId"] = self.after_id
+
+        with self.client.get("/api/Product", params=params, name="/api/Product", catch_response=True) as resp:
+            if resp.status_code != 200:
+                resp.failure(f"status {resp.status_code}")
+                return
+            try:
+                data = resp.json()
+            except Exception as e:
+                resp.failure(f"json parse error: {e}")
+                return
+
+            self.after_id = data.get("nextAfter")
+            has_more = bool(data.get("hasMore"))
+
+            if not has_more or self.after_id is None or random.random() < 0.05:
+                self.after_id = None
+
+            resp.success()
 
     @task(2)
     def create_order(self):
