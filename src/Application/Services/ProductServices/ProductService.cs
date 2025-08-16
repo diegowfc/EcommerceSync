@@ -74,6 +74,7 @@ namespace Application.Services.ProductServices
 
             var query = _unitOfWork.Products
                   .Query()
+                  .AsNoTracking()              
                   .OrderBy(p => p.Id);
 
             var total = await query.CountAsync(cancellationToken);
