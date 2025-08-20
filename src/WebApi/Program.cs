@@ -20,6 +20,7 @@ using Infrastructure.Repositories._unitOfWorkRepository;
 using Infrastructure.Repositories.UserRepository;
 using Microsoft.EntityFrameworkCore;
 using Domain.Interfaces.EndpointCache;
+using Microsoft.Extensions.Options;
 
 namespace WebAPI
 {
@@ -51,6 +52,17 @@ namespace WebAPI
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            builder.Services.Configure<QueueMetricsOptions>(builder.Configuration.GetSection("QueueMetrics"));
+
+            builder.Services.AddHttpClient("RabbitMQManagement", (sp, http) =>
+            {
+                var opt = sp.GetRequiredService<IOptions<QueueMetricsOptions>>().Value;
+                http.BaseAddress = new Uri(opt.BaseUrl.TrimEnd('/')); 
+                http.Timeout = TimeSpan.FromSeconds(10);
+            });
+
+            builder.Services.AddHostedService<QueueMetricsCollector>();
 
             var connStr = builder.Configuration.GetConnectionString("DefaultConnection")
                           ?? builder.Configuration["ConnectionStrings:DefaultConnection"]
