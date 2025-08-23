@@ -15,14 +15,7 @@ Este repositório contém:
 1. **E-commerce Síncrono** (master)
    - Comunicação direta entre os módulos.
    - Sem uso de mensageria.
-
-## Tecnologias Utilizadas
-
-- **.NET (C#)** para o backend
-- **PostgreSQL** e **SUPABASE** para o banco de dados
-- **Locust** para simulação de carga e testes de desempenho
-- **Executada tanto localmente quanto com isolamento de camadas, hospedando a aplicação em uma VM Linux**
-
+  
 2. **E-commerce Assíncrono** (RabbitMQ)
    - Publicação de mensagens em filas
    - Consumidores
@@ -32,8 +25,8 @@ Este repositório contém:
 
 - **.NET (C#)** para o backend
 - **PostgreSQL** e **SUPABASE** para o banco de dados
-- **RabbitMQ (CLOUDAMQP)** para gerenciamento de filas (broker)
 - **Locust** para simulação de carga e testes de desempenho
+- **RabbitMQ (CLOUDAMQP)** para gerenciamento de filas (broker)
 - **Executada tanto localmente quanto com isolamento de camadas, hospedando a aplicação em uma VM Linux**
 
 ## Funcionalidades Implementadas
@@ -52,7 +45,7 @@ Este repositório contém:
 
 ## Testes de Carga
 
-Os testes de carga serão realizados com **Locust**, com o intuito de medir:
+Os testes de carga foram realizados com **Locust**, com o intuito de medir:
 
 - Tempo de resposta
 - Quantidade de requisições simultâneas suportadas
