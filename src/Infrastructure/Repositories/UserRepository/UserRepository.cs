@@ -12,5 +12,11 @@ namespace Infrastructure.Repositories.UserRepository
         {
             return await _dbSet.FirstOrDefaultAsync(p => p.Id == id);
         }
+
+        public async Task<bool> ExistsByEmailAsync(string email, CancellationToken ct = default)
+        {
+            var e = email?.Trim();
+            return await _dbSet.AsNoTracking().AnyAsync(u => u.Email == e, ct);
+        }
     }
 }

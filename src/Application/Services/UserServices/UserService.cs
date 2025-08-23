@@ -1,4 +1,5 @@
 ﻿using Application.DTOs.UserDtos;
+using Application.Exceptions;
 using AutoMapper;
 using Domain.Entities.UserEntity;
 using Domain.Interfaces.UnitOfWork;
@@ -11,9 +12,20 @@ namespace Application.Services.UserServices
         private readonly IUnitOfWork _unitOfWork = unitOfWork;
         private readonly IMapper _mapper = mapper;
 
-        public async Task RegisterUser(UserCreateDto userDto)
+        public async Task RegisterUser(UserCreateDto userDto, CancellationToken ct = default)
         {
             var user = _mapper.Map<User>(userDto);
+
+            if (user is null) throw new ArgumentNullException(nameof(user));
+
+            var normalizedEmail = NormalizeEmail(userDto.Email);
+            if (string.IsNullOrWhiteSpace(normalizedEmail))
+            {
+                throw new ArgumentException("E-mail inválido.", nameof(userDto.Email));
+            }
+
+            if (await _unitOfWork.Users.ExistsByEmailAsync(normalizedEmail, ct).ConfigureAwait(false))
+                throw new EmailAlreadyExistsException("Já existe um usuário cadastrado com esse e-mail.");
 
             var salt = GenerateSalt();
             var hash = HashPassword(userDto.Password, salt);
@@ -50,6 +62,11 @@ namespace Application.Services.UserServices
             var userEntity = await _unitOfWork.Users.GetUserByIdAsync(id);
 
             return _mapper.Map<UserResponseDTO>(userEntity);
+        }
+
+        private static string NormalizeEmail(string email)
+        {
+            return email?.Trim().ToLowerInvariant();
         }
     }
 }

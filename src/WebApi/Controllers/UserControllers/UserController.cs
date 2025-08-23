@@ -14,6 +14,9 @@ namespace WebAPI.Controllers.UserControllers
         private readonly IUserService _service = service;
 
         [HttpPost("register")]
+        [ProducesResponseType(typeof(void), StatusCodes.Status202Accepted)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> RegisterUser(UserCreateDto userDto)
         {
             await _service.RegisterUser(userDto);

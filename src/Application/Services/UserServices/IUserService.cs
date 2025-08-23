@@ -6,7 +6,7 @@ namespace Application.Services.UserServices
 {
     public interface IUserService
     {
-        Task RegisterUser(UserCreateDto userDto);
+        Task RegisterUser(UserCreateDto userDto, CancellationToken ct = default);
         Task<UserResponseDTO> GetByIdAsync(int id);
 
     }

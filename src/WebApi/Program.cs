@@ -18,6 +18,7 @@ using Infrastructure.Repositories.ProductRepository;
 using Infrastructure.Repositories.UoWRepository;
 using Infrastructure.Repositories.UserRepository;
 using Microsoft.EntityFrameworkCore;
+using WebAPI.Filters;
 
 namespace WebAPI
 {
@@ -49,6 +50,7 @@ namespace WebAPI
             builder.Services.AddAutoMapper(typeof(OrderProfile).Assembly);
 
             builder.Services.AddControllers();
+            builder.Services.AddControllers(o => o.Filters.Add<GlobalExceptionFilter>());
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
