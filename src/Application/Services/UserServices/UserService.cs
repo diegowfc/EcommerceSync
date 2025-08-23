@@ -1,10 +1,12 @@
 ﻿using Application.DTOs.OrderDtos;
 using Application.DTOs.UserDtos;
+using Application.Exceptions;
 using AutoMapper;
 using Domain.Entities.UserEntity;
 using Domain.Event;
 using Domain.Interfaces.EndpointCache;
 using Domain.Interfaces.UnitOfWork;
+using Domain.Interfaces.UserInterface;
 using MassTransit;
 using MassTransit.Transports;
 using System.Security.Cryptography;
@@ -28,8 +30,19 @@ namespace Application.Services.UserServices
             return _mapper.Map<UserResponseDTO>(userEntity);
         }
 
-        public async Task<Guid> RegisterUser(UserCreateDto userDto)
+        public async Task<Guid> RegisterUser(UserCreateDto userDto, CancellationToken ct = default)
         {
+            if (userDto is null) throw new ArgumentNullException(nameof(userDto));
+
+            var normalizedEmail = NormalizeEmail(userDto.Email);
+            if (string.IsNullOrWhiteSpace(normalizedEmail))
+            {
+                throw new ArgumentException("E-mail inválido.", nameof(userDto.Email));
+            }
+
+            if (await _unitOfWork.Users.ExistsByEmailAsync(normalizedEmail, ct).ConfigureAwait(false))
+                throw new EmailAlreadyExistsException("Já existe um usuário cadastrado com esse e-mail.");
+
             var correlationId = NewId.NextGuid();
 
             var salt = GenerateSalt();
@@ -69,6 +82,11 @@ namespace Application.Services.UserServices
             using var rng = RandomNumberGenerator.Create();
             rng.GetBytes(salt);
             return salt;
+        }
+
+        private static string NormalizeEmail(string email)
+        {
+            return email?.Trim().ToLowerInvariant();
         }
     }
 }

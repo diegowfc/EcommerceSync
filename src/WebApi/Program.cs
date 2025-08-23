@@ -21,6 +21,7 @@ using Infrastructure.Repositories.UserRepository;
 using Microsoft.EntityFrameworkCore;
 using Domain.Interfaces.EndpointCache;
 using Microsoft.Extensions.Options;
+using WebAPI.Filters;
 
 namespace WebAPI
 {
@@ -49,7 +50,10 @@ namespace WebAPI
 
             builder.Services.AddMessaging(builder.Configuration);
             builder.Services.AddAutoMapper(typeof(OrderProfile).Assembly);
+
             builder.Services.AddControllers();
+            builder.Services.AddControllers(o => o.Filters.Add<GlobalExceptionFilter>());
+  
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 

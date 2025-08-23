@@ -25,6 +25,8 @@ namespace EcommerceSync.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.HasPostgresExtension("citext"); 
+
             modelBuilder.Entity<Order>()
                  .Property(o => o.Status)
                  .HasConversion<string>();
@@ -41,6 +43,15 @@ namespace EcommerceSync.Infrastructure.Data
                 .WithMany(u => u.Carts)
                 .HasForeignKey(c => c.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<User>(b =>
+            {
+                b.Property(u => u.Email)
+                    .HasColumnType("citext")  
+                    .IsRequired();
+
+                b.HasIndex(u => u.Email).IsUnique();
+            });
         }
     }
 }

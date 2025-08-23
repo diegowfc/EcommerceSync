@@ -6,5 +6,6 @@ namespace Domain.Interfaces.UserInterface
     public interface IUserRepository : IRepositoryBase<User>
     {
         Task<User> GetUserByIdAsync(int id);
+        Task<bool> ExistsByEmailAsync(string normalizedEmail, CancellationToken ct = default);
     }
 }
