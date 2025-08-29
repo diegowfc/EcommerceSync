@@ -9,6 +9,8 @@ namespace Application.Services.PaymentServices
 {
     public interface IFakePaymentGatewayClient
     {
-        Task<GatewayResultDto> ProcessPaymentAsync(CancellationToken ct = default);
+
+        Task<GatewayResultDto> ProcessPaymentByTokenAsync(float amount, string paymentToken, string idempotencyKey, CancellationToken ct = default);
+        Task<string> TokenizeCardAsync(string cardNumber, string cardHolder, string expiry, string cvv, CancellationToken ct = default);
     }
 }

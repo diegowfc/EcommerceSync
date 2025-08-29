@@ -11,11 +11,8 @@ namespace Domain.Event
     {
         public Guid CorrelationId { get; init; }
         public int OrderId { get; init; }
-        public PaymentMethod PaymentMethod { get; init; }
-        public string CardNumber { get; init; }
-        public string CardHolder { get; init; }
-        public string Expiry { get; init; }
-        public string Cvv { get; init; }
+        public string PaymentToken { get; set; } = default!;
+
 
     }
 }

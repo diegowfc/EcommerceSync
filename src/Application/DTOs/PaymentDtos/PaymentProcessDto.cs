@@ -17,5 +17,8 @@ namespace Application.DTOs.PaymentDtos
         public string Expiry { get; set; }
 
         public string Cvv { get; set; }
+
+        public string? PaymentToken { get; set; }
+
     }
 }
