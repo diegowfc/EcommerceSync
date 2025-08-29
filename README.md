@@ -12,21 +12,27 @@ O principal objetivo do projeto é demonstrar como uma aplicação baseada em ar
 
 Este repositório contém:
 
-1. **E-commerce Síncrono**
+1. **E-commerce Síncrono** (master)
    - Comunicação direta entre os módulos.
    - Sem uso de mensageria.
+  
+2. **E-commerce Assíncrono** (RabbitMQ)
+   - Publicação de mensagens em filas
+   - Consumidores
+   - RabbitMQ.
 
 ## Tecnologias Utilizadas
 
 - **.NET (C#)** para o backend
 - **PostgreSQL** e **SUPABASE** para o banco de dados
 - **Locust** para simulação de carga e testes de desempenho
-- **Executada localmente**
+- **RabbitMQ (CLOUDAMQP)** para gerenciamento de filas (broker)
+- **Executada tanto localmente quanto com isolamento de camadas, hospedando a aplicação em uma VM Linux**
 
 ## Funcionalidades Implementadas
 
 - Catálogo de produtos
-- Gestão de Pedidos
+- Criação de Pedidos
 - Criação de usuários
 - Carrinho de compras
 - Pagamento
@@ -39,24 +45,17 @@ Este repositório contém:
 
 ## Testes de Carga
 
-Os testes de carga serão realizados com **Locust**, com o intuito de medir:
+Os testes de carga foram realizados com **Locust**, com o intuito de medir:
 
 - Tempo de resposta
 - Quantidade de requisições simultâneas suportadas
 - Comportamento da aplicação sob estresse
 - Tolerância a falhas
 
-## Como Executar
 
-**Pré-requisitos:**
+## Análise de custos
+Foi feito também uma cálculo para se medir gastos em um cenário real de produção. Simulação foi realizada através de calculadores disponibilizadas pela Azure e Amazon.
 
-- .NET 6 SDK
-- PostgreSQL
 
-### Executando o Projeto
 
-```bash
-# Clone o repositório
-git clone https://github.com/diegowfc/EcommerceSync
-cd EcommerceSync
 
