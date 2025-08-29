@@ -2,6 +2,7 @@
 using Domain.Event;
 using Domain.Interfaces.UnitOfWork;
 using MassTransit;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Consumers
 {
@@ -13,15 +14,36 @@ namespace Application.Consumers
         {
             var evt = context.Message;
 
-            var cart = new Cart
-            {
-                ProductId = evt.ProductId,
-                UserId = evt.UserId,
-                Quantity = evt.Quantity
-            };
+            var affected = await _unitOfWork.Carts.Query()
+                .Where(c => c.UserId == evt.UserId && c.ProductId == evt.ProductId)
+                .ExecuteUpdateAsync(set => set
+               .SetProperty(c => c.Quantity, c => c.Quantity + evt.Quantity));
 
-            await _unitOfWork.Carts.AddAsync(cart);
+            if (affected == 0)
+            {
+                try
+                {
+                    await _unitOfWork.Carts.AddAsync(new Domain.Entities.CartEntity.Cart
+                    {
+                        UserId = evt.UserId,
+                        ProductId = evt.ProductId,
+                        Quantity = evt.Quantity
+                    });
+                    await _unitOfWork.CommitAsync();
+                    return;
+                }
+                catch (DbUpdateException)
+                {
+                    // Corrida: outra instância inseriu; faz UPDATE
+                    await _unitOfWork.Carts.Query()
+                        .Where(c => c.UserId == evt.UserId && c.ProductId == evt.ProductId)
+                        .ExecuteUpdateAsync(set => set
+                            .SetProperty(c => c.Quantity, c => c.Quantity + evt.Quantity));
+                }
+            }
+
             await _unitOfWork.CommitAsync();
+
         }
     }
 }

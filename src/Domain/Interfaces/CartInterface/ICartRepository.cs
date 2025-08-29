@@ -5,6 +5,6 @@ namespace Domain.Interfaces.CartInterface
 {
     public interface ICartRepository : IRepositoryBase<Cart>
     {
-
+        IQueryable<Cart> Query();
     }
 }
