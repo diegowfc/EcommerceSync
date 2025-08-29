@@ -21,7 +21,12 @@ namespace Application.Services.PaymentServices
                 throw new KeyNotFoundException($"Order {dto.OrderId} não encontrada.");
             }
 
-            var result = await _gateway.ProcessPaymentAsync(order.Total, dto);
+            if (order.Status == OrderStatus.Paid)
+                return new GatewayResultDto { Success = true, TransactionId = "ALREADY_PAID" };
+
+            var idempotencyKey = $"order:{order.Id}";
+
+            var result = await _gateway.ProcessPaymentAsync(order.Total, dto, idempotencyKey, default);
 
             var payment = new Payment
             {

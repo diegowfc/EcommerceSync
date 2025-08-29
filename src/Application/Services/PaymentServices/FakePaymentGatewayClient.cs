@@ -1,28 +1,59 @@
 ﻿using Application.DTOs.PaymentDtos;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Application.Services.PaymentServices;
+using System.Collections.Concurrent;
 
-namespace Application.Services.PaymentServices
+public class FakePaymentGatewayClient : IPaymentGatewayClient
 {
-    public class FakePaymentGatewayClient : IPaymentGatewayClient
+    public bool IsAvailable { get; set; } = true;
+
+    private readonly ConcurrentDictionary<string, (GatewayResultDto result, DateTime ts)> _cache
+        = new(StringComparer.Ordinal);
+
+    private readonly TimeSpan _ttl = TimeSpan.FromMinutes(30);
+
+    public async Task<GatewayResultDto> ProcessPaymentAsync(
+        float amount,
+        PaymentProcessDto dto,
+        string idempotencyKey,
+        CancellationToken ct = default)
     {
-        public bool IsAvailable { get; set; } = true; //simulates service down
+        if (!IsAvailable)
+            throw new InvalidOperationException("Gateway fora do ar.");
 
-        public Task<GatewayResultDto> ProcessPaymentAsync(float amount, PaymentProcessDto dto)
+        if (_cache.TryGetValue(idempotencyKey, out var entry) && DateTime.UtcNow - entry.ts < _ttl)
+            return entry.result;
+
+        await Task.Delay(500, ct);
+
+        var res = new GatewayResultDto
         {
-            if (!IsAvailable)
-                throw new InvalidOperationException("Gateway fora do ar.");
+            Success = true,
+            TransactionId = Guid.NewGuid().ToString()
+        };
+        _cache[idempotencyKey] = (res, DateTime.UtcNow);
+        return res;
+    }
 
-            Thread.Sleep(500);
+    public async Task<GatewayResultDto> ProcessPaymentByTokenAsync(
+        decimal amount,
+        string paymentToken,
+        string idempotencyKey,
+        CancellationToken ct = default)
+    {
+        if (!IsAvailable)
+            throw new InvalidOperationException("Gateway fora do ar.");
 
-            return Task.FromResult(new GatewayResultDto
-            {
-                Success = true,
-                TransactionId = Guid.NewGuid().ToString()
-            });
-        }
+        if (_cache.TryGetValue(idempotencyKey, out var entry) && DateTime.UtcNow - entry.ts < _ttl)
+            return entry.result;
+
+        await Task.Delay(500, ct);
+
+        var res = new GatewayResultDto
+        {
+            Success = true,
+            TransactionId = Guid.NewGuid().ToString()
+        };
+        _cache[idempotencyKey] = (res, DateTime.UtcNow);
+        return res;
     }
 }

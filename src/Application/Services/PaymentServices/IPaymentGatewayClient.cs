@@ -9,6 +9,6 @@ namespace Application.Services.PaymentServices
 {
     public interface IPaymentGatewayClient
     {
-        Task<GatewayResultDto> ProcessPaymentAsync(float amount, PaymentProcessDto dto);
+        Task<GatewayResultDto> ProcessPaymentAsync(float amount, PaymentProcessDto dto, string idempotencyKey, CancellationToken ct);
     }
 }
