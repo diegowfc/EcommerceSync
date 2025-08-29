@@ -2,6 +2,7 @@
 using AutoMapper;
 using Domain.Entities.CartEntity;
 using Domain.Interfaces.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Services.CartServices
 {
@@ -12,9 +13,32 @@ namespace Application.Services.CartServices
 
         public async Task AddItemToCartAsync(CartAddDto cartDto)
         {
-            var userCart = _mapper.Map<Cart>(cartDto);
-            await _unitOfWork.Carts.AddAsync(userCart);
-            await _unitOfWork.CommitAsync();
+            var affected = await _unitOfWork.Carts.Query()
+                .Where(c => c.UserId == cartDto.UserId && c.ProductId == cartDto.ProductId)
+                .ExecuteUpdateAsync(set => set
+                    .SetProperty(c => c.Quantity, c => c.Quantity + cartDto.Quantity));
+
+            if (affected > 0)
+            {
+                await _unitOfWork.CommitAsync();
+                return;
+            }
+
+            var entity = _mapper.Map<Cart>(cartDto);
+            try
+            {
+                await _unitOfWork.Carts.AddAsync(entity);
+                await _unitOfWork.CommitAsync();
+            }
+            catch (DbUpdateException)
+            {
+                await _unitOfWork.Carts.Query()
+                    .Where(c => c.UserId == cartDto.UserId && c.ProductId == cartDto.ProductId)
+                    .ExecuteUpdateAsync(set => set
+                        .SetProperty(c => c.Quantity, c => c.Quantity + cartDto.Quantity));
+
+                await _unitOfWork.CommitAsync();
+            }
         }
     }
 }
